@@ -87,6 +87,7 @@ const FinanceChart = () => {
                     alt=""
                     width={20}
                     height={20}
+                    aria-hidden="true"
                     // className="cursor-pointer"
                 />
             </div>
@@ -123,6 +124,7 @@ const FinanceChart = () => {
                         align="center"
                         verticalAlign="top"
                         wrapperStyle={{
+                            fontWeight: "500",
                             paddingTop: "10px",
                             paddingBottom: "30px",
                         }}
@@ -132,7 +134,6 @@ const FinanceChart = () => {
                         dataKey="income"
                         stroke="#C3EBFA"
                         strokeWidth={5}
-                        // activeDot={{ r: 8 }}
                     />
                     <Line
                         type="monotone"
