@@ -2,13 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom scrollbar for all scrollable elements */
+::-webkit-scrollbar {
+    width: 8px;
+    background: #f0f0f0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e6e4e4;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #bfbebe;
+}
+
 .react-calendar {
     width: 100% !important;
     border: none !important;
     font-family: 'Inter', sans-serif !important;
 }
 
-.react-calendar__navigation__label__labelText{
+.react-calendar__navigation__label__labelText {
     font-weight: 600 !important;
 }
 
