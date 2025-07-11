@@ -1,3 +1,4 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -58,29 +59,20 @@ const ParentListPage = () => {
             <td className="hidden md:table-cell">{item.address}</td>
             <td>
                 <div className="flex items-center gap-2">
-                    <Link href={`/list/parents/${item.id}`}>
-                        <button
-                            className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
-                            aria-label="Edit parent"
-                        >
-                            <Image
-                                src="/edit.png"
-                                alt=""
-                                aria-hidden="true"
-                                width={16}
-                                height={16}
-                            />
-                        </button>
-                    </Link>
+                    {/* DELETE or EDIT A PARENT */}
                     {role === "admin" && (
-                        <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
-                            <Image
-                                src="/delete.png"
-                                alt=""
-                                width={16}
-                                height={16}
+                        <>
+                            <FormModal
+                                table="parent"
+                                type="update"
+                                data={item}
                             />
-                        </button>
+                            <FormModal
+                                table="parent"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
                     )}
                 </div>
             </td>
@@ -120,14 +112,7 @@ const ParentListPage = () => {
                         </button>
                         {/* Add new parent button */}
                         {role === "admin" && (
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                                <Image
-                                    src="/plus.png"
-                                    alt=""
-                                    width={14}
-                                    height={14}
-                                />
-                            </button>
+                            <FormModal table="parent" type="create" />
                         )}
                     </div>
                 </div>

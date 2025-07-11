@@ -1,3 +1,4 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -79,6 +80,7 @@ const TeacherListPage = () => {
             <td className="hidden md:table-cell">{item.address}</td>
             <td>
                 <div className="flex items-center gap-2">
+                    {/* VIEW A TEACHER */}
                     <Link href={`/list/teachers/${item.id}`}>
                         <button
                             className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
@@ -93,15 +95,17 @@ const TeacherListPage = () => {
                             />
                         </button>
                     </Link>
+                    {/* DELETE A TEACHER */}
                     {role === "admin" && (
-                        <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
-                            <Image
-                                src="/delete.png"
-                                alt=""
-                                width={16}
-                                height={16}
-                            />
-                        </button>
+                        // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
+                        //     <Image
+                        //         src="/delete.png"
+                        //         alt=""
+                        //         width={16}
+                        //         height={16}
+                        //     />
+                        // </button>
+                        <FormModal table="teacher" type="delete" id={item.id} />
                     )}
                 </div>
             </td>
@@ -141,14 +145,15 @@ const TeacherListPage = () => {
                         </button>
                         {/* Add new teacher button */}
                         {role === "admin" && (
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                                <Image
-                                    src="/plus.png"
-                                    alt=""
-                                    width={14}
-                                    height={14}
-                                />
-                            </button>
+                            // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
+                            //     <Image
+                            //         src="/plus.png"
+                            //         alt=""
+                            //         width={14}
+                            //         height={14}
+                            //     />
+                            // </button>
+                            <FormModal table="teacher" type="create" />
                         )}
                     </div>
                 </div>

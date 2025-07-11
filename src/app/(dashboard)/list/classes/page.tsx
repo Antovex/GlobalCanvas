@@ -1,3 +1,4 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -52,29 +53,20 @@ const ClassListPage = () => {
             <td className="hidden md:table-cell">{item.supervisor}</td>
             <td>
                 <div className="flex items-center gap-2">
-                    <Link href={`/list/classes/${item.id}`}>
-                        <button
-                            className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
-                            aria-label="Edit class"
-                        >
-                            <Image
-                                src="/edit.png"
-                                alt=""
-                                aria-hidden="true"
-                                width={16}
-                                height={16}
-                            />
-                        </button>
-                    </Link>
+                    {/* EDIT or DELETE A CLASS */}
                     {role === "admin" && (
-                        <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
-                            <Image
-                                src="/delete.png"
-                                alt=""
-                                width={16}
-                                height={16}
+                        <>
+                            <FormModal
+                                table="class"
+                                type="update"
+                                data={item}
                             />
-                        </button>
+                            <FormModal
+                                table="class"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
                     )}
                 </div>
             </td>
@@ -114,25 +106,14 @@ const ClassListPage = () => {
                         </button>
                         {/* Add new subject button */}
                         {role === "admin" && (
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                                <Image
-                                    src="/plus.png"
-                                    alt=""
-                                    width={14}
-                                    height={14}
-                                />
-                            </button>
+                            <FormModal table="class" type="create" />
                         )}
                     </div>
                 </div>
             </div>
 
             {/* LIST */}
-            <Table
-                columns={columns}
-                renderRow={renderRow}
-                data={classesData}
-            />
+            <Table columns={columns} renderRow={renderRow} data={classesData} />
 
             {/* PAGINATION BAR */}
             <Pagination />
