@@ -115,7 +115,7 @@ const renderRow = (item: TeacherList) => (
                     //         height={16}
                     //     />
                     // </button>
-                    <FormModal table="teacher" type="delete" id={item.id} />
+                    <FormModal table="teacher" type="delete" id={Number(item.id)} /> //id={item.id}
                 )}
             </div>
         </td>
