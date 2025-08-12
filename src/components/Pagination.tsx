@@ -3,7 +3,7 @@
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { useRouter } from "next/navigation";
 
-const Pagination = ({ page, count }: { page: number; count: number }) => {
+const Pagination = ({ page = 1, count = 0 }: { page?: number; count?: number }) => {
     const router = useRouter();
 
     const hasPrev = ITEM_PER_PAGE * (page - 1) > 0;
