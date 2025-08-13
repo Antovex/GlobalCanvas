@@ -16,15 +16,17 @@ const columns = [
     {
         header: "Subject Name",
         accessor: "name",
+        className: "text-center",
     },
     {
         header: "Teachers",
         accessor: "teachers",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Actions",
         accessor: "action",
+        className: "text-center",
     },
 ];
 
@@ -34,12 +36,12 @@ const renderRow = (item: SubjectList) => (
         key={item.id}
         className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
     >
-        <td className="flex items-center gap-4 p-4">{item.name}</td>
-        <td className="hidden md:table-cell">
+        <td className="text-center gap-4 p-4">{item.name}</td>
+        <td className="hidden md:table-cell text-center">
             {item.teachers.map((teacher) => teacher.name).join(", ")}
         </td>
         <td>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 px-4">
                 {/* EDIT or DELETE A SUBJECT */}
                 {role === "admin" && (
                     <>
@@ -112,7 +114,8 @@ const SubjectListPage = async ({
                     All Subjects
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <TableSearch />
+                    <TableSearch placeholder="Search with Subject Name..." />
+                    {/* or Teacher Name... */}
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button

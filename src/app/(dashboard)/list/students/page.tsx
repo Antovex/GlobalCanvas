@@ -16,30 +16,32 @@ const columns = [
     {
         header: "Info",
         accessor: "info",
+        className: "text-center",
     },
     {
         header: "Student ID",
         accessor: "studentId",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Grade",
         accessor: "grade",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Phone",
         accessor: "phone",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Address",
         accessor: "address",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Actions",
         accessor: "action",
+        className: "text-center",
     },
 ];
 
@@ -49,7 +51,7 @@ const renderRow = (item: StudentList) => (
         key={item.id}
         className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
     >
-        <td className="flex items-center gap-4 p-4">
+        <td className="flex items-center justify-center gap-4 p-4">
             <Image
                 src={item.img || "/noAvatar.png"}
                 alt="Student photo"
@@ -57,17 +59,17 @@ const renderRow = (item: StudentList) => (
                 height={40}
                 className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center justify-center">
                 <h3 className="font-semibold">{item.name}</h3>
                 <p className="text-xs text-gray-500">{item.class.name}</p>
             </div>
         </td>
-        <td className="hidden md:table-cell">{item.username}</td>
-        <td className="hidden md:table-cell">{item.class.name[0]}</td>
-        <td className="hidden md:table-cell">{item.phone}</td>
-        <td className="hidden md:table-cell">{item.address}</td>
+        <td className="hidden md:table-cell text-center">{item.username}</td>
+        <td className="hidden md:table-cell text-center">{item.class.name[0]}</td>
+        <td className="hidden md:table-cell text-center">{item.phone}</td>
+        <td className="hidden md:table-cell text-center">{item.address}</td>
         <td>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 px-4">
                 {/* VIEW A STUDENT  */}
                 <Link href={`/list/students/${item.id}`}>
                     <button

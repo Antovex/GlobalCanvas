@@ -30,35 +30,37 @@ const columns = [
     {
         header: "Info",
         accessor: "info",
+        className: "text-center",
     },
     {
         header: "Teacher ID",
         accessor: "teacherId",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Subjects",
         accessor: "subjects",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Classes",
         accessor: "classes",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Phone",
         accessor: "phone",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Address",
         accessor: "address",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Actions",
         accessor: "action",
+        className: "text-center",
     },
 ];
 
@@ -67,7 +69,7 @@ const renderRow = (item: TeacherList) => (
         key={item.id}
         className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
     >
-        <td className="flex items-center gap-4 p-4">
+        <td className="flex items-center justify-center gap-4 p-4">
             <Image
                 src={item.img || "/noAvatar.png"}
                 alt="Teacher photo"
@@ -76,21 +78,21 @@ const renderRow = (item: TeacherList) => (
                 className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
             />
             <div className="flex flex-col">
-                <h3 className="font-semibold">{item.name}</h3>
+                <h3 className="font-semibold">{item.name}</h3> {/* + " " + item.surname */}
                 <p className="text-xs text-gray-500">{item?.email}</p>
             </div>
         </td>
-        <td className="hidden md:table-cell">{item.id}</td>
-        <td className="hidden md:table-cell">
+        <td className="hidden md:table-cell text-center">{item.id}</td>
+        <td className="hidden md:table-cell text-center">
             {item.subjects.map((subject) => subject.name).join(", ")}
         </td>
-        <td className="hidden md:table-cell">
+        <td className="hidden md:table-cell text-center">
             {item.classes.map((classItem) => classItem.name).join(",")}
         </td>
-        <td className="hidden md:table-cell">{item.phone}</td>
-        <td className="hidden md:table-cell">{item.address}</td>
+        <td className="hidden md:table-cell text-center">{item.phone}</td>
+        <td className="hidden md:table-cell text-center">{item.address}</td>
         <td>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 px-4">
                 {/* VIEW A TEACHER */}
                 <Link href={`/list/teachers/${item.id}`}>
                     <button

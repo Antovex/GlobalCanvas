@@ -16,25 +16,27 @@ const columns = [
     {
         header: "Info",
         accessor: "info",
+        className: "text-center",
     },
     {
         header: "Student Names",
         accessor: "students",
-        className: "hidden md:table-cell",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Phone",
         accessor: "phone",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Address",
         accessor: "address",
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell text-center",
     },
     {
         header: "Actions",
         accessor: "action",
+        className: "text-center",
     },
 ];
 
@@ -44,17 +46,19 @@ const renderRow = (item: ParentList) => (
         key={item.id}
         className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
     >
-        <td className="flex items-center gap-4 p-4">
-            <div className="flex flex-col">
+        <td className="flex items-center justify-center gap-4 p-4">
+            <div className="flex flex-col items-center justify-center">
                 <h3 className="font-semibold">{item.name}</h3>
                 <p className="text-xs text-gray-500">{item?.email}</p>
             </div>
         </td>
-        <td className="hidden md:table-cell">{item.students.map(student => student.name).join(", ")}</td>
-        <td className="hidden md:table-cell">{item.phone}</td>
-        <td className="hidden md:table-cell">{item.address}</td>
+        <td className="hidden md:table-cell text-center">
+            {item.students.map((student) => student.name).join(", ")}
+        </td>
+        <td className="hidden md:table-cell text-center">{item.phone}</td>
+        <td className="hidden md:table-cell text-center">{item.address}</td>
         <td>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 px-4">
                 {/* DELETE or EDIT A PARENT */}
                 {role === "admin" && (
                     <>
@@ -84,7 +88,19 @@ const ParentListPage = async ({
             if (value !== undefined) {
                 switch (key) {
                     case "search":
-                        query.name = { contains: value, mode: "insensitive" };
+                        query.OR = [
+                            { name: { contains: value, mode: "insensitive" } },
+                            {
+                                students: {
+                                    some: {
+                                        name: {
+                                            contains: value,
+                                            mode: "insensitive",
+                                        },
+                                    },
+                                },
+                            },
+                        ];
                         break;
                     default:
                         break;
@@ -127,7 +143,7 @@ const ParentListPage = async ({
                     All Parents
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <TableSearch placeholder="Search with Parent Name..." />
+                    <TableSearch placeholder="Search with Parent or Student Name..." />
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button

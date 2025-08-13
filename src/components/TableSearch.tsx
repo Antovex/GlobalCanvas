@@ -22,7 +22,7 @@ const TableSearch = ({ placeholder = "Search..." }: { placeholder?: string }) =>
             <input
                 type="text"
                 placeholder={placeholder}
-                className="w-[200px] p-2 bg-transparent outline-none"
+                className="w-[240px] p-2 bg-transparent outline-none"
                 aria-label="Search"
             />
         </form>
