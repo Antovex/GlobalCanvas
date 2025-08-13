@@ -1,3 +1,4 @@
+import DbError from "@/components/DbError";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -9,7 +10,7 @@ import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-type StudentList = Student & { class: { name: string }; };
+type StudentList = Student & { class: { name: string } };
 
 const columns = [
     {
@@ -105,41 +106,44 @@ const StudentListPage = async ({
     searchParams: { [key: string]: string | undefined };
 }) => {
     const { page, ...queryParams } = searchParams;
-    
-        const p = page ? parseInt(page) : 1;
-    
-        // URL PARAMS CONDITIONS
-        const query: Prisma.StudentWhereInput = {};
 
-        if (queryParams) {
-            for (const [key, value] of Object.entries(queryParams)) {
-                if (value !== undefined) {
-                    switch (key) {
-                        case "teacherId":
-                            query.class = {
-                                lessons: {
-                                    some: {
-                                        teacherId: value,
-                                    },
-                                }
-                            };
-                            break;
-                        case "search":
-                            query.name = { contains: value, mode: "insensitive" };
-                            break;
-                        default:
-                            break;
-                    }
+    const p = page ? parseInt(page) : 1;
+
+    // URL PARAMS CONDITIONS
+    const query: Prisma.StudentWhereInput = {};
+
+    if (queryParams) {
+        for (const [key, value] of Object.entries(queryParams)) {
+            if (value !== undefined) {
+                switch (key) {
+                    case "teacherId":
+                        query.class = {
+                            lessons: {
+                                some: {
+                                    teacherId: value,
+                                },
+                            },
+                        };
+                        break;
+                    case "search":
+                        query.name = { contains: value, mode: "insensitive" };
+                        break;
+                    default:
+                        break;
                 }
             }
         }
-    
-        const [data, count] = await prisma.$transaction([
+    }
+
+    let data = [];
+    let count = 0;
+    let dbError = null;
+    try {
+        [data, count] = await prisma.$transaction([
             prisma.student.findMany({
                 where: query,
                 include: {
                     class: true,
-                    // grade: true,
                 },
                 take: ITEM_PER_PAGE,
                 skip: ITEM_PER_PAGE * (p - 1),
@@ -148,8 +152,14 @@ const StudentListPage = async ({
                 where: query,
             }),
         ]);
-
-
+    } catch (error: any) {
+        dbError = error.message || "Unable to connect to the database.";
+        return (
+            <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+                {dbError && <DbError message={dbError} />}
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -199,11 +209,7 @@ const StudentListPage = async ({
             </div>
 
             {/* LIST */}
-            <Table
-                columns={columns}
-                renderRow={renderRow}
-                data={data}
-            />
+            <Table columns={columns} renderRow={renderRow} data={data} />
 
             {/* PAGINATION BAR */}
             <Pagination page={p} count={count} />

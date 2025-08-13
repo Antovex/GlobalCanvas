@@ -1,3 +1,4 @@
+import DbError from "@/components/DbError";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -115,11 +116,7 @@ const renderRow = (item: TeacherList) => (
                     //         height={16}
                     //     />
                     // </button>
-                    <FormModal
-                        table="teacher"
-                        type="delete"
-                        id={item.id}
-                    />
+                    <FormModal table="teacher" type="delete" id={item.id} />
                 )}
             </div>
         </td>
@@ -159,20 +156,32 @@ const TeacherListPage = async ({
         }
     }
 
-    const [data, count] = await prisma.$transaction([
-        prisma.teacher.findMany({
-            where: query,
-            include: {
-                subjects: true,
-                classes: true,
-            },
-            take: ITEM_PER_PAGE,
-            skip: ITEM_PER_PAGE * (p - 1),
-        }),
-        prisma.teacher.count({
-            where: query,
-        }),
-    ]);
+    let data = [];
+    let count = 0;
+    let dbError = null;
+    try {
+        [data, count] = await prisma.$transaction([
+            prisma.teacher.findMany({
+                where: query,
+                include: {
+                    subjects: true,
+                    classes: true,
+                },
+                take: ITEM_PER_PAGE,
+                skip: ITEM_PER_PAGE * (p - 1),
+            }),
+            prisma.teacher.count({
+                where: query,
+            }),
+        ]);
+    } catch (error: any) {
+        dbError = error.message || "Unable to connect to the database.";
+        return (
+            <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+                {dbError && <DbError message={dbError} />}
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
