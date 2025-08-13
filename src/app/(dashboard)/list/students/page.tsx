@@ -169,7 +169,7 @@ const StudentListPage = async ({
                     All Students
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <TableSearch />
+                    <TableSearch placeholder="Search with Student Name..." />
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button

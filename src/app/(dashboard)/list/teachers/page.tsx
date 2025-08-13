@@ -191,7 +191,7 @@ const TeacherListPage = async ({
                     All Teachers
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <TableSearch />
+                    <TableSearch placeholder="Search with Teacher Name..." />
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-const TableSearch = () => {
+const TableSearch = ({ placeholder = "Search..." }: { placeholder?: string }) => {
     const router = useRouter();
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,7 +21,7 @@ const TableSearch = () => {
             <Image src="/search.png" alt="Search icon" width={14} height={14} />
             <input
                 type="text"
-                placeholder="Search..."
+                placeholder={placeholder}
                 className="w-[200px] p-2 bg-transparent outline-none"
                 aria-label="Search"
             />
