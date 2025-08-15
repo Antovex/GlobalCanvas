@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GlobalCanvas School Management System",
-  description: "Next.js School Management System",
+    title: "GlobalCanvas School Management System",
+    description: "Next.js School Management System",
+    icons: {
+        icon: "/favicon.ico",
+    },
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
-  );
+    return (
+        <ClerkProvider>
+            <html lang="en">
+                <body className={inter.className}>{children}</body>
+            </html>
+        </ClerkProvider>
+    );
 }
