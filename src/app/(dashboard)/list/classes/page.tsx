@@ -3,80 +3,22 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { classesData, role } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getUserRole } from "@/lib/util";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
-// import Link from "next/link";
 
-type ClassList = Class & {supervisor: Teacher};
-
-const columns = [
-    {
-        header: "Class Name",
-        accessor: "name",
-        className: "text-center",
-    },
-    {
-        header: "Capacity",
-        accessor: "capacity",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Grade",
-        accessor: "grade",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Supervisor",
-        accessor: "supervisor",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-        className: "text-center",
-    },
-];
-
-// Make each row of the table for passing it to the Table component
-const renderRow = (item: ClassList) => (
-    <tr
-        key={item.id}
-        className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
-    >
-        <td className="text-center gap-4 p-4">{item.name}</td>
-        <td className="hidden md:table-cell text-center">{item.capacity}</td>
-        <td className="hidden md:table-cell text-center">{item.name[0]}</td>
-        <td className="hidden md:table-cell text-center">{item.supervisor.name + " " + item.supervisor.surname}</td>
-        <td>
-            <div className="flex items-center justify-center gap-2 px-4">
-                {/* EDIT or DELETE A CLASS */}
-                {role === "admin" && (
-                    <>
-                        <FormModal
-                            table="class"
-                            type="update"
-                            data={item}
-                        />
-                        <FormModal
-                            table="class"
-                            type="delete"
-                            id={item.id}
-                        />
-                    </>
-                )}
-            </div>
-        </td>
-    </tr>
-);
+type ClassList = Class & { supervisor: Teacher };
 
 const ClassListPage = async ({
     searchParams,
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+
+    const role = await getUserRole();
+
     const { page, ...queryParams } = searchParams;
 
     const p = page ? parseInt(page) : 1;
@@ -126,6 +68,74 @@ const ClassListPage = async ({
             </div>
         );
     }
+
+    const columns = [
+        {
+            header: "Class Name",
+            accessor: "name",
+            className: "text-center",
+        },
+        {
+            header: "Capacity",
+            accessor: "capacity",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Grade",
+            accessor: "grade",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Supervisor",
+            accessor: "supervisor",
+            className: "hidden md:table-cell text-center",
+        },
+        ...(role === "admin"
+            ? [
+                  {
+                      header: "Actions",
+                      accessor: "action",
+                      className: "text-center",
+                  },
+              ]
+            : []),
+    ];
+
+    // Make each row of the table for passing it to the Table component
+    const renderRow = (item: ClassList) => (
+        <tr
+            key={item.id}
+            className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
+        >
+            <td className="text-center gap-4 p-4">{item.name}</td>
+            <td className="hidden md:table-cell text-center">
+                {item.capacity}
+            </td>
+            <td className="hidden md:table-cell text-center">{item.name[0]}</td>
+            <td className="hidden md:table-cell text-center">
+                {item.supervisor.name + " " + item.supervisor.surname}
+            </td>
+            <td>
+                <div className="flex items-center justify-center gap-2 px-4">
+                    {/* EDIT or DELETE A CLASS */}
+                    {role === "admin" && (
+                        <>
+                            <FormModal
+                                table="class"
+                                type="update"
+                                data={item}
+                            />
+                            <FormModal
+                                table="class"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
