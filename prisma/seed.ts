@@ -179,15 +179,65 @@ async function main() {
     }
 
     // ATTENDANCE
-    for (let i = 1; i <= 10; i++) {
-        await prisma.attendance.create({
-            data: {
-                date: new Date(),
-                present: true,
-                studentId: `student${i}`,
-                lessonId: (i % 30) + 1,
-            },
-        });
+    // for (let i = 1; i <= 10; i++) {
+    //     await prisma.attendance.create({
+    //         data: {
+    //             date: new Date(),
+    //             present: true,
+    //             studentId: `student${i}`,
+    //             lessonId: (i % 30) + 1,
+    //         },
+    //     });
+    // }
+
+    // const today = new Date();
+    // const previousMonday = new Date(today);
+    // previousMonday.setDate(today.getDate() - today.getDay() - 6); // Get previous week's Monday
+
+    // for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+    //     // Monday to Friday
+    //     const attendanceDate = new Date(previousMonday);
+    //     attendanceDate.setDate(previousMonday.getDate() + dayOffset);
+
+    //     for (let i = 1; i <= 10; i++) {
+    //         await prisma.attendance.create({
+    //             data: {
+    //                 date: attendanceDate,
+    //                 present: true,
+    //                 studentId: `student${i}`,
+    //                 lessonId: (i % 30) + 1,
+    //             },
+    //         });
+    //     }
+    // }
+
+    const today = new Date();
+    const previousMonday = new Date(today);
+    previousMonday.setDate(today.getDate() - today.getDay() - 6); // Get previous week's Monday
+
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        // Monday to Sunday
+        const attendanceDate = new Date(previousMonday);
+        attendanceDate.setDate(previousMonday.getDate() + dayOffset);
+
+        // Random number of presents for the day (between 1 and 10)
+        const presentsCount = Math.floor(Math.random() * 10) + 1;
+
+        // Shuffle student IDs to pick random students
+        const studentIds = Array.from(
+            { length: 10 },
+            (_, i) => `student${i + 1}`
+        );
+        for (let i = 0; i < presentsCount; i++) {
+            await prisma.attendance.create({
+                data: {
+                    date: attendanceDate,
+                    present: true,
+                    studentId: studentIds[i],
+                    lessonId: ((i + dayOffset) % 30) + 1,
+                },
+            });
+        }
     }
 
     // EVENT
