@@ -3,68 +3,21 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { lessonsData, role } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getUserRole } from "@/lib/util";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
-// import Link from "next/link";
 
 type LessonList = Lesson & { teacher: Teacher; subject: Subject; class: Class };
-
-const columns = [
-    {
-        header: "Subject Name",
-        accessor: "name",
-        className: "text-center",
-    },
-    {
-        header: "Class",
-        accessor: "class",
-        className: "text-center",
-    },
-    {
-        header: "Teacher",
-        accessor: "teacher",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-        className: "text-center",
-    },
-];
-
-// Make each row of the table for passing it to the Table component
-const renderRow = (item: LessonList) => (
-    <tr
-        key={item.id}
-        className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
-    >
-        <td className="text-center gap-4 p-4">{item.subject.name}</td>
-        <td className="text-center gap-4 p-4">{item.class.name}</td>
-        <td className="hidden md:table-cell text-center gap-4 p-4">
-            {item.teacher.name + " " + item.teacher.surname}
-        </td>
-        <td>
-            <div className="flex items-center justify-center gap-2 px-4">
-                {/* EDIT or DELETE A LESSON */}
-                {role === "admin" && (
-                    <>
-                        <FormModal table="lesson" type="update" data={item} />
-                        <FormModal table="lesson" type="delete" id={item.id} />
-                    </>
-                )}
-            </div>
-        </td>
-    </tr>
-);
 
 const LessonListPage = async ({
     searchParams,
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+    const role = await getUserRole();
+
     const { page, ...queryParams } = searchParams;
 
     const p = page ? parseInt(page) : 1;
@@ -144,6 +97,66 @@ const LessonListPage = async ({
             </div>
         );
     }
+
+    const columns = [
+        {
+            header: "Subject Name",
+            accessor: "name",
+            className: "text-center",
+        },
+        {
+            header: "Class",
+            accessor: "class",
+            className: "text-center",
+        },
+        {
+            header: "Teacher",
+            accessor: "teacher",
+            className: "hidden md:table-cell text-center",
+        },
+        ...(role === "admin"
+            ? [
+                  {
+                      header: "Actions",
+                      accessor: "action",
+                      className: "text-center",
+                  },
+              ]
+            : []),
+    ];
+
+    // Make each row of the table for passing it to the Table component
+    const renderRow = (item: LessonList) => (
+        <tr
+            key={item.id}
+            className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
+        >
+            <td className="text-center gap-4 p-4">{item.subject.name}</td>
+            <td className="text-center gap-4 p-4">{item.class.name}</td>
+            <td className="hidden md:table-cell text-center gap-4 p-4">
+                {item.teacher.name + " " + item.teacher.surname}
+            </td>
+            <td>
+                <div className="flex items-center justify-center gap-2 px-4">
+                    {/* EDIT or DELETE A LESSON */}
+                    {role === "admin" && (
+                        <>
+                            <FormModal
+                                table="lesson"
+                                type="update"
+                                data={item}
+                            />
+                            <FormModal
+                                table="lesson"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">

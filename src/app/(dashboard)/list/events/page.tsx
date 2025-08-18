@@ -6,89 +6,20 @@ import TableSearch from "@/components/TableSearch";
 import { eventsData, role } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getCurrentUserId, getUserRole } from "@/lib/util";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 type EventList = Event & { class: Class };
-
-const columns = [
-    {
-        header: "Title",
-        accessor: "title",
-        className: "text-center",
-    },
-    {
-        header: "Class",
-        accessor: "class",
-        className: "text-center",
-    },
-    {
-        header: "Date",
-        accessor: "date",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Start Time",
-        accessor: "startTime",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "End Time",
-        accessor: "endTime",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-        className: "text-center",
-    },
-];
-
-// Make each row of the table for passing it to the Table component
-const renderRow = (item: EventList) => (
-    <tr
-        key={item.id}
-        className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
-    >
-        <td className="flex items-center justify-center gap-4 p-4">{item.title}</td>
-        <td className="text-center">{item.class.name}</td>
-        <td className="hidden md:table-cell text-center">
-            {new Intl.DateTimeFormat("en-US").format(item.startTime)}
-        </td>
-        <td className="hidden md:table-cell text-center">
-            {item.startTime.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            })}
-        </td>
-        <td className="hidden md:table-cell text-center">
-            {item.endTime.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            })}
-        </td>
-        <td>
-            <div className="flex items-center justify-center gap-2 px-4">
-                {/* EDIT or DELETE AN EVENT */}
-                {role === "admin" && (
-                    <>
-                        <FormModal table="event" type="update" data={item} />
-                        <FormModal table="event" type="delete" id={item.id} />
-                    </>
-                )}
-            </div>
-        </td>
-    </tr>
-);
 
 const EventListPage = async ({
     searchParams,
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+    const role = await getUserRole();
+    const currentUserId = await getCurrentUserId();
+
     const { page, ...queryParams } = searchParams;
 
     const p = page ? parseInt(page) : 1;
@@ -109,6 +40,20 @@ const EventListPage = async ({
             }
         }
     }
+
+    // ROLE CONDITIONS
+    const roleConditions = {
+        teacher: { lessons: { some: { teacherId: currentUserId! } } },
+        student: { students: { some: { id: currentUserId! } } },
+        parent: { students: { some: { parentId: currentUserId! } } },
+    };
+
+    query.OR = [
+        { classId: null },
+        {
+            class: roleConditions[role as keyof typeof roleConditions] || {},
+        },
+    ];
 
     let data = [];
     let count = 0;
@@ -135,6 +80,92 @@ const EventListPage = async ({
             </div>
         );
     }
+
+    const columns = [
+        {
+            header: "Title",
+            accessor: "title",
+            className: "text-center",
+        },
+        {
+            header: "Class",
+            accessor: "class",
+            className: "text-center",
+        },
+        {
+            header: "Date",
+            accessor: "date",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Start Time",
+            accessor: "startTime",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "End Time",
+            accessor: "endTime",
+            className: "hidden md:table-cell text-center",
+        },
+        ...(role === "admin"
+            ? [
+                  {
+                      header: "Actions",
+                      accessor: "action",
+                      className: "text-center",
+                  },
+              ]
+            : []),
+    ];
+
+    // Make each row of the table for passing it to the Table component
+    const renderRow = (item: EventList) => (
+        <tr
+            key={item.id}
+            className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
+        >
+            <td className="flex items-center justify-center gap-4 p-4">
+                {item.title}
+            </td>
+            <td className="text-center">{item.class?.name || "-"}</td>
+            <td className="hidden md:table-cell text-center">
+                {new Intl.DateTimeFormat("en-US").format(item.startTime)}
+            </td>
+            <td className="hidden md:table-cell text-center">
+                {item.startTime.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                })}
+            </td>
+            <td className="hidden md:table-cell text-center">
+                {item.endTime.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                })}
+            </td>
+            <td>
+                <div className="flex items-center justify-center gap-2 px-4">
+                    {/* EDIT or DELETE AN EVENT */}
+                    {role === "admin" && (
+                        <>
+                            <FormModal
+                                table="event"
+                                type="update"
+                                data={item}
+                            />
+                            <FormModal
+                                table="event"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">

@@ -5,7 +5,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getUserRole } from "@/lib/util";
+import { getCurrentUserId, getUserRole } from "@/lib/util";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
@@ -16,6 +16,10 @@ const AnnouncementListPage = async ({
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+    
+    // Get role inside the function
+    const role = await getUserRole();
+    const currentUserId = await getCurrentUserId();
 
     const { page, ...queryParams } = searchParams;
 
@@ -37,6 +41,20 @@ const AnnouncementListPage = async ({
             }
         }
     }
+
+    // ROLE CONDITIONS
+    const roleConditions = {
+        teacher: { lessons: { some: { teacherId: currentUserId! } } },
+        student: { students: { some: { id: currentUserId! } } },
+        parent: { students: { some: { parentId: currentUserId! } } },
+    };
+
+    query.OR = [
+        { classId: null },
+        {
+            class: roleConditions[role as keyof typeof roleConditions] || {},
+        },
+    ];
 
     let data = [];
     let count = 0;
@@ -64,8 +82,6 @@ const AnnouncementListPage = async ({
         );
     }
 
-    // Get role inside the function
-    const role = await getUserRole();
 
     const columns = [
         {
@@ -103,7 +119,7 @@ const AnnouncementListPage = async ({
             <td className="flex items-center justify-center gap-4 p-4">
                 {item.title}
             </td>
-            <td className="text-center">{item.class.name}</td>
+            <td className="text-center">{item.class?.name || "-"}</td>
             <td className="hidden md:table-cell text-center">
                 {item.date ? (
                     new Intl.DateTimeFormat("en-US").format(new Date(item.date))

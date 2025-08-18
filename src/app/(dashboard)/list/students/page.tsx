@@ -3,110 +3,24 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, studentsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getCurrentUserId, getUserRole } from "@/lib/util";
 import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
 type StudentList = Student & { class: { name: string } };
 
-const columns = [
-    {
-        header: "Info",
-        accessor: "info",
-        className: "text-center",
-    },
-    {
-        header: "Student ID",
-        accessor: "studentId",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Grade",
-        accessor: "grade",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Phone",
-        accessor: "phone",
-        className: "hidden lg:table-cell text-center",
-    },
-    {
-        header: "Address",
-        accessor: "address",
-        className: "hidden lg:table-cell text-center",
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-        className: "text-center",
-    },
-];
-
-// Make each row of the table for passing it to the Table component
-const renderRow = (item: StudentList) => (
-    <tr
-        key={item.id}
-        className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
-    >
-        <td className="flex items-center justify-center gap-4 p-4">
-            <Image
-                src={item.img || "/noAvatar.png"}
-                alt="Student photo"
-                width={40}
-                height={40}
-                className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-            />
-            <div className="flex flex-col items-center justify-center">
-                <h3 className="font-semibold">{item.name}</h3>
-                <p className="text-xs text-gray-500">{item.class.name}</p>
-            </div>
-        </td>
-        <td className="hidden md:table-cell text-center">{item.username}</td>
-        <td className="hidden md:table-cell text-center">{item.class.name[0]}</td>
-        <td className="hidden md:table-cell text-center">{item.phone}</td>
-        <td className="hidden md:table-cell text-center">{item.address}</td>
-        <td>
-            <div className="flex items-center justify-center gap-2 px-4">
-                {/* VIEW A STUDENT  */}
-                <Link href={`/list/students/${item.id}`}>
-                    <button
-                        className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
-                        aria-label="View student"
-                    >
-                        <Image
-                            src="/view.png"
-                            alt=""
-                            aria-hidden="true"
-                            width={16}
-                            height={16}
-                        />
-                    </button>
-                </Link>
-                {/* DELETE A STUDENT */}
-                {role === "admin" && (
-                    // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
-                    //     <Image
-                    //         src="/delete.png"
-                    //         alt=""
-                    //         width={16}
-                    //         height={16}
-                    //     />
-                    // </button>
-                    <FormModal table="student" type="delete" id={item.id} />
-                )}
-            </div>
-        </td>
-    </tr>
-);
 
 const StudentListPage = async ({
     searchParams,
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+
+    const role = await getUserRole();
+
     const { page, ...queryParams } = searchParams;
 
     const p = page ? parseInt(page) : 1;
@@ -162,6 +76,96 @@ const StudentListPage = async ({
             </div>
         );
     }
+
+    const columns = [
+        {
+            header: "Info",
+            accessor: "info",
+            className: "text-center",
+        },
+        {
+            header: "Student ID",
+            accessor: "studentId",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Grade",
+            accessor: "grade",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Phone",
+            accessor: "phone",
+            className: "hidden lg:table-cell text-center",
+        },
+        {
+            header: "Address",
+            accessor: "address",
+            className: "hidden lg:table-cell text-center",
+        },
+        ...(role === "admin" ? [{
+            header: "Actions",
+            accessor: "action",
+            className: "text-center",
+        }] : []),
+    ];
+    
+    // Make each row of the table for passing it to the Table component
+    const renderRow = (item: StudentList) => (
+        <tr
+            key={item.id}
+            className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
+        >
+            <td className="flex items-center justify-center gap-4 p-4">
+                <Image
+                    src={item.img || "/noAvatar.png"}
+                    alt="Student photo"
+                    width={40}
+                    height={40}
+                    className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
+                />
+                <div className="flex flex-col items-center justify-center">
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-xs text-gray-500">{item.class.name}</p>
+                </div>
+            </td>
+            <td className="hidden md:table-cell text-center">{item.username}</td>
+            <td className="hidden md:table-cell text-center">{item.class.name[0]}</td>
+            <td className="hidden md:table-cell text-center">{item.phone}</td>
+            <td className="hidden md:table-cell text-center">{item.address}</td>
+            <td>
+                <div className="flex items-center justify-center gap-2 px-4">
+                    {/* VIEW A STUDENT  */}
+                    <Link href={`/list/students/${item.id}`}>
+                        <button
+                            className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
+                            aria-label="View student"
+                        >
+                            <Image
+                                src="/view.png"
+                                alt=""
+                                aria-hidden="true"
+                                width={16}
+                                height={16}
+                            />
+                        </button>
+                    </Link>
+                    {/* DELETE A STUDENT */}
+                    {role === "admin" && (
+                        // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
+                        //     <Image
+                        //         src="/delete.png"
+                        //         alt=""
+                        //         width={16}
+                        //         height={16}
+                        //     />
+                        // </button>
+                        <FormModal table="student" type="delete" id={item.id} />
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">

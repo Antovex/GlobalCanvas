@@ -3,62 +3,23 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, subjectsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getUserRole } from "@/lib/util";
 import { Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 type SubjectList = Subject & { teachers: Teacher[] };
 
-const columns = [
-    {
-        header: "Subject Name",
-        accessor: "name",
-        className: "text-center",
-    },
-    {
-        header: "Teachers",
-        accessor: "teachers",
-        className: "hidden md:table-cell text-center",
-    },
-    {
-        header: "Actions",
-        accessor: "action",
-        className: "text-center",
-    },
-];
-
-// Make each row of the table for passing it to the Table component
-const renderRow = (item: SubjectList) => (
-    <tr
-        key={item.id}
-        className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
-    >
-        <td className="text-center gap-4 p-4">{item.name}</td>
-        <td className="hidden md:table-cell text-center">
-            {item.teachers.map((teacher) => teacher.name).join(", ")}
-        </td>
-        <td>
-            <div className="flex items-center justify-center gap-2 px-4">
-                {/* EDIT or DELETE A SUBJECT */}
-                {role === "admin" && (
-                    <>
-                        <FormModal table="subject" type="update" data={item} />
-                        <FormModal table="subject" type="delete" id={item.id} />
-                    </>
-                )}
-            </div>
-        </td>
-    </tr>
-);
 
 const SubjectListPage = async ({
     searchParams,
 }: {
     searchParams: { [key: string]: string | undefined };
 }) => {
+
+    const role = await getUserRole();
+
     const { page, ...queryParams } = searchParams;
 
     const p = page ? parseInt(page) : 1;
@@ -79,7 +40,7 @@ const SubjectListPage = async ({
             }
         }
     }
-
+    
     let data = [];
     let count = 0;
     let dbError = null;
@@ -105,6 +66,48 @@ const SubjectListPage = async ({
             </div>
         );
     }
+
+    const columns = [
+        {
+            header: "Subject Name",
+            accessor: "name",
+            className: "text-center",
+        },
+        {
+            header: "Teachers",
+            accessor: "teachers",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Actions",
+            accessor: "action",
+            className: "text-center",
+        },
+    ];
+    
+    // Make each row of the table for passing it to the Table component
+    const renderRow = (item: SubjectList) => (
+        <tr
+            key={item.id}
+            className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
+        >
+            <td className="text-center gap-4 p-4">{item.name}</td>
+            <td className="hidden md:table-cell text-center">
+                {item.teachers.map((teacher) => teacher.name).join(", ")}
+            </td>
+            <td>
+                <div className="flex items-center justify-center gap-2 px-4">
+                    {/* EDIT or DELETE A SUBJECT */}
+                    {role === "admin" && (
+                        <>
+                            <FormModal table="subject" type="update" data={item} />
+                            <FormModal table="subject" type="delete" id={item.id} />
+                        </>
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
