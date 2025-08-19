@@ -5,12 +5,15 @@ import * as SignIn from "@clerk/elements/sign-in";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const SUBMIT_TIMEOUT_MS = 8000;
 
 const LoginPage = () => {
     const { isLoaded, isSignedIn, user } = useUser();
 
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const role = user?.publicMetadata.role;
@@ -19,6 +22,18 @@ const LoginPage = () => {
             router.push(`/${role}`);
         }
     }, [user, router]);
+
+    // reset submitting when sign-in completes
+    useEffect(() => {
+        if (isSignedIn) setIsSubmitting(false);
+    }, [isSignedIn]);
+
+    // safety: clear loading after a timeout so UI doesn't hang forever
+    useEffect(() => {
+        if (!isSubmitting) return;
+        const t = setTimeout(() => setIsSubmitting(false), SUBMIT_TIMEOUT_MS);
+        return () => clearTimeout(t);
+    }, [isSubmitting]);
 
     return (
         <div className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 to-white">
@@ -76,9 +91,36 @@ const LoginPage = () => {
                         {/* <div className="my-3 border-t border-purple-100" /> */}
                         <SignIn.Action
                             submit
-                            className="bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 hover:from-purple-800 hover:to-purple-800 text-white font-semibold rounded-lg text-base p-[12px] shadow-lg mt-3"
+                            onClick={() => setIsSubmitting(true)}
+                            className={`flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 hover:from-purple-800 hover:to-purple-800 text-white font-semibold rounded-lg text-base p-[12px] shadow-lg mt-3 ${isSubmitting ? "opacity-80 cursor-wait" : ""}`}
                         >
-                            Sign In
+                            {isSubmitting ? (
+                                <>
+                                    <svg
+                                        className="w-4 h-4 animate-spin"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        />
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                        />
+                                    </svg>
+                                    <span>Signing in…</span>
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
                         </SignIn.Action>
                     </SignIn.Step>
                 </SignIn.Root>
