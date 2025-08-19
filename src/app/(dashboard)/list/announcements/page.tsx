@@ -14,14 +14,22 @@ type AnnouncementList = Announcement & { class: Class };
 const AnnouncementListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams:
+        | { [key: string]: string | undefined }
+        | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-    
     // Get role inside the function
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();
 
-    const { page, ...queryParams } = searchParams;
+    // const { page, ...queryParams } = searchParams;
+    const rawSearchParams = await searchParams;
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
 
@@ -43,19 +51,21 @@ const AnnouncementListPage = async ({
     }
 
     // ROLE CONDITIONS
-    const roleConditions = {
-        teacher: { lessons: { some: { teacherId: currentUserId! } } },
-        student: { students: { some: { id: currentUserId! } } },
-        parent: { students: { some: { parentId: currentUserId! } } },
-    };
+    if (role !== "admin") {
+        const roleConditions = {
+            teacher: { lessons: { some: { teacherId: currentUserId! } } },
+            student: { students: { some: { id: currentUserId! } } },
+            parent: { students: { some: { parentId: currentUserId! } } },
+        };
 
-    query.OR = [
-        { classId: null },
-        {
-            class: roleConditions[role as keyof typeof roleConditions] || {},
-        },
-    ];
-
+        query.OR = [
+            { classId: null },
+            {
+                class:
+                    roleConditions[role as keyof typeof roleConditions] || {},
+            },
+        ];
+    }
     let data = [];
     let count = 0;
     let dbError = null;
@@ -82,7 +92,6 @@ const AnnouncementListPage = async ({
         );
     }
 
-
     const columns = [
         {
             header: "Title",
@@ -107,7 +116,13 @@ const AnnouncementListPage = async ({
                       className: "text-center",
                   },
               ]
-            : []),
+            : [
+                  {
+                      header: " ",
+                      accessor: "empty_action",
+                      className: "text-center",
+                  },
+              ]),
     ];
 
     // Make each row of the table for passing it to the Table component

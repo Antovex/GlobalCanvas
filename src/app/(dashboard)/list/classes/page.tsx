@@ -14,12 +14,20 @@ type ClassList = Class & { supervisor: Teacher };
 const ClassListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams:
+        | { [key: string]: string | undefined }
+        | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-
     const role = await getUserRole();
 
-    const { page, ...queryParams } = searchParams;
+    // const { page, ...queryParams } = searchParams;
+    const rawSearchParams = await searchParams;
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
 
@@ -98,7 +106,13 @@ const ClassListPage = async ({
                       className: "text-center",
                   },
               ]
-            : []),
+            : [
+                  {
+                      header: " ",
+                      accessor: "empty_action",
+                      className: "text-center",
+                  },
+              ]),
     ];
 
     // Make each row of the table for passing it to the Table component
