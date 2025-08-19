@@ -180,6 +180,12 @@ model Announcement {
   class   Class? @relation(fields: [classId], references: [id])
 }
 
+// enum AttendanceStatus {
+//   PRESENT
+//   ABSENT
+//   COMPENSATION
+// }
+
 enum UserSex {
   MALE
   FEMALE
