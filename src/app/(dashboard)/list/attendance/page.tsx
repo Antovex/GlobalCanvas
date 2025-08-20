@@ -1,5 +1,4 @@
 import DbError from "@/components/DbError";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -8,11 +7,12 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserRole } from "@/lib/util";
 import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
+import AttendanceToggle from "@/components/AttendanceToggle";
+import AttendanceDatePicker from "@/components/AttendanceDatePicker";
 
 type StudentList = Student & { class: { name: string } };
 
-const StudentListPage = async ({
+const AttendancePage = async ({
     searchParams,
 }: {
     // searchParams: { [key: string]: string | undefined };
@@ -32,6 +32,11 @@ const StudentListPage = async ({
 
     const p = page ? parseInt(page) : 1;
 
+    // Date for date picker from URL params
+    const selectedDateRaw = normalized.date; // format expected: YYYY-MM-DD or ISO
+    const selectedDate = selectedDateRaw ? new Date(selectedDateRaw).toISOString() : undefined;
+
+
     // URL PARAMS CONDITIONS
     const query: Prisma.StudentWhereInput = {};
 
@@ -39,15 +44,6 @@ const StudentListPage = async ({
         for (const [key, value] of Object.entries(queryParams)) {
             if (value !== undefined) {
                 switch (key) {
-                    case "teacherId":
-                        query.class = {
-                            lessons: {
-                                some: {
-                                    teacherId: value,
-                                },
-                            },
-                        };
-                        break;
                     case "search":
                         query.name = { contains: value, mode: "insensitive" };
                         break;
@@ -66,7 +62,7 @@ const StudentListPage = async ({
             prisma.student.findMany({
                 where: query,
                 include: {
-                    class: true,
+                    class: { select: {name: true} },
                 },
                 take: ITEM_PER_PAGE,
                 skip: ITEM_PER_PAGE * (p - 1),
@@ -84,6 +80,30 @@ const StudentListPage = async ({
         );
     }
 
+    // --- load existing attendance for this lesson + day so we can show initial state ---
+    const LESSON_ID = 1; // TODO: replace with selected lesson id (or pass from UI)
+    const parsedDateForQuery = selectedDate ? new Date(selectedDate) : new Date();
+    const dayStart = new Date(parsedDateForQuery);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const studentIds = (data as StudentList[]).map((s) => s.id);
+    const attendanceByStudent: Record<string, any> = {};
+    if (studentIds.length > 0) {
+        const attendances = await prisma.attendance.findMany({
+            where: {
+                lessonId: LESSON_ID,
+                studentId: { in: studentIds },
+                date: { gte: dayStart, lt: dayEnd },
+            },
+        });
+        for (const a of attendances) {
+            attendanceByStudent[a.studentId] = a;
+        }
+    }
+    // --- end attendance preload ---
+
     const columns = [
         {
             header: "Info",
@@ -100,21 +120,11 @@ const StudentListPage = async ({
             accessor: "grade",
             className: "hidden md:table-cell text-center",
         },
-        {
-            header: "Phone",
-            accessor: "phone",
-            className: "hidden lg:table-cell text-center",
-        },
-        {
-            header: "Address",
-            accessor: "address",
-            className: "hidden lg:table-cell text-center",
-        },
         ...(role === "admin" || role === "teacher"
             ? [
                   {
-                      header: "Actions",
-                      accessor: "action",
+                      header: "Attendance",
+                      accessor: "attendance",
                       className: "text-center",
                   },
               ]
@@ -152,36 +162,24 @@ const StudentListPage = async ({
             <td className="hidden md:table-cell text-center">
                 {item.class.name[0]}
             </td>
-            <td className="hidden md:table-cell text-center">{item.phone}</td>
-            <td className="hidden md:table-cell text-center">{item.address}</td>
             <td>
                 <div className="flex items-center justify-center gap-2 px-4">
-                    {/* VIEW A STUDENT  */}
-                    <Link href={`/list/students/${item.id}`}>
-                        <button
-                            className="w-7 h-7 flex items-center justify-center rounded-full bg-Sky"
-                            aria-label="View student"
-                        >
-                            <Image
-                                src="/view.png"
-                                alt=""
-                                aria-hidden="true"
-                                width={16}
-                                height={16}
-                            />
-                        </button>
-                    </Link>
-                    {/* DELETE A STUDENT */}
-                    {role === "admin" && (
-                        // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-Purple">
-                        //     <Image
-                        //         src="/delete.png"
-                        //         alt=""
-                        //         width={16}
-                        //         height={16}
-                        //     />
-                        // </button>
-                        <FormModal table="student" type="delete" id={item.id} />
+                    {(role === "admin" || role === "teacher") && (
+                        // map current DB record to the toggle's initial value
+                        (() => {
+                            const att = attendanceByStudent[item.id];
+                            const initial = att ? (att.present ? "PRESENT" : "ABSENT") : null;
+                            return (
+                                <AttendanceToggle
+                                    // force remount when selectedDate changes
+                                    // key={`${item.id}-${selectedDate ?? "today"}`}
+                                    studentId={item.id}
+                                    lessonId={LESSON_ID}
+                                    date={selectedDate}
+                                    initial={initial}
+                                />
+                            );
+                        })()
                     )}
                 </div>
             </td>
@@ -196,6 +194,7 @@ const StudentListPage = async ({
                     All Students
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                    <AttendanceDatePicker initialDate={selectedDateRaw} />
                     <TableSearch placeholder="Search with Student Name..." />
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
@@ -220,7 +219,7 @@ const StudentListPage = async ({
                             />
                         </button>
                         {/* Add new student button */}
-                        {role === "admin" && (
+                        {/* {role === "admin" && (
                             // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
                             //     <Image
                             //         src="/plus.png"
@@ -230,7 +229,7 @@ const StudentListPage = async ({
                             //     />
                             // </button>
                             <FormModal table="student" type="create" />
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>
@@ -244,4 +243,4 @@ const StudentListPage = async ({
     );
 };
 
-export default StudentListPage;
+export default AttendancePage;
