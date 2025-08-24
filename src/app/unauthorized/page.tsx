@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const UnauthorizedPage = () => {
     const { signOut } = useClerk();
+    const router = useRouter();
 
     return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-[#EDF9FD] to-white rounded-xl shadow-2xl p-8 mx-auto max-w-lg mt-16">
@@ -55,7 +57,10 @@ const UnauthorizedPage = () => {
                     </button>
                     <button
                         className="mt-2 px-6 py-2 rounded-lg bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold shadow hover:from-purple-600 hover:to-purple-900 transition"
-                        onClick={() => signOut()}
+                        onClick={async () => {
+                            await signOut();
+                            router.push("/");
+                        }}
                     >
                         Logout
                     </button>

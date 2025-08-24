@@ -16,34 +16,10 @@ export default clerkMiddleware(async (auth, req) => {
 
     const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-    // for (const { matcher, allowedRoles } of matchers) {
-    //     if (matcher(req) && !allowedRoles.includes(role!)) {
-    //         return NextResponse.redirect(new URL(`/${role}`, req.url));
-    //     }
-    // }
-
-    // for (const { matcher, allowedRoles } of matchers) {
-    //     if (matcher(req)) {
-    //         if (!role || !allowedRoles.includes(role)) {
-    //             // Redirect to a generic unauthorized page or login if role is missing
-    //             return NextResponse.redirect(new URL(`/unauthorized`, req.url));
-    //         }
-    //         if (!allowedRoles.includes(role)) {
-    //             // Validate role against known safe values before redirecting
-    //             const safeRoles = ["admin", "teacher", "student", "parent"];
-    //             if (role && safeRoles.includes(role)) {
-    //                 return NextResponse.redirect(new URL(`/${role}`, req.url));
-    //             } else {
-    //                 return NextResponse.redirect(new URL(`/unauthorized`, req.url));
-    //             }
-    //         }
-    //     }
-    // }
-
     for (const { matcher, allowedRoles } of matchers) {
         if (matcher(req)) {
             if (!role) {
-                // Redirect to a generic unauthorized page or login if role is missing
+                // Authenticated user but no role metadata: treat as unauthorized
                 return NextResponse.redirect(new URL(`/unauthorized`, req.url));
             }
             if (!allowedRoles.includes(role)) {

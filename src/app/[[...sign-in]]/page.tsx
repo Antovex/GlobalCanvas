@@ -4,7 +4,7 @@ import * as Clerk from "@clerk/elements/common";
 import * as SignIn from "@clerk/elements/sign-in";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const SUBMIT_TIMEOUT_MS = 8000;
@@ -15,13 +15,17 @@ const LoginPage = () => {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
         const role = user?.publicMetadata.role;
 
-        if (role) {
-            router.push(`/${role}`);
+        if (user) {
+            if (role) {
+                router.replace(`/${role}`);
+            }
         }
-    }, [user, router]);
+    }, [user, router, searchParams]);
 
     // reset submitting when sign-in completes
     useEffect(() => {

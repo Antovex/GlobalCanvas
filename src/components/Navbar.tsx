@@ -1,10 +1,13 @@
-import { UserButton } from "@clerk/nextjs";
+import { getUserRole } from "@/lib/util";
 import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
+import UserMenuClient from "./UserMenuClient";
 
 const Navbar = async () => {
+    // server-side user and role
     const user = await currentUser();
-    const role = (user?.publicMetadata.role as string) || "norole";
+    const role = await getUserRole();
+    const displayName = user?.firstName || user?.fullName || "User";
 
     return (
         <div className="flex items-center justify-between p-4">
@@ -36,17 +39,20 @@ const Navbar = async () => {
                     </div>
                 </div>
                 {/* Username & User Role */}
-                <div className="flex flex-col">
-                    <span className="text-xs leading-3 font-medium">
-                        John Doe
+                <div className="flex flex-row justify-center items-center">
+                <div className="flex flex-col justify-center pr-2">
+                    <span className="text-xs text-right leading-3 font-medium">
+                        {displayName}
                     </span>
                     <span className="text-[10px] text-gray-500 text-right">
                         {role}
                     </span>
                 </div>
-                {/* User Avatar */}
-                {/* <Image src="/avatar.png" alt="" width={36} height={36} className="rounded-full"/> */}
-                <UserButton />
+                <div className="flex flex-col">
+                {/* client-only part (UserButton + client redirect after sign-out) */}
+                <UserMenuClient />
+                </div>
+                </div>
             </div>
         </div>
     );
