@@ -1,10 +1,24 @@
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserId, getUserRole } from "@/lib/util";
 import { NextResponse } from "next/server";
 
 const ALLOWED_STATUS = ["PRESENT", "ABSENT", "COMPENSATION"] as const;
 
 export async function POST(req: Request) {
     try {
+        const userId = await getCurrentUserId(); // require sign-in
+        if (!userId)
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
+
+        // get Clerk user metadata (role) to authorize
+        const role = await getUserRole();
+        if (role !== "teacher" && role !== "admin") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
         const body = await req.json();
 
         // validate required fields (lessonId is required per your schema)
@@ -29,7 +43,10 @@ export async function POST(req: Request) {
         // normalize and validate lessonId (Prisma expects a number for integer FK)
         const lessonId = Number(body.lessonId);
         if (Number.isNaN(lessonId)) {
-            return NextResponse.json({ error: "invalid lessonId" }, { status: 400 });
+            return NextResponse.json(
+                { error: "invalid lessonId" },
+                { status: 400 }
+            );
         }
 
         const status = String(body.status).toUpperCase();
@@ -72,7 +89,6 @@ export async function POST(req: Request) {
         //     date: parsedDate.toISOString(), // or pass Date object if your DB client accepts it
         // };
         // console.log(attendancePayload);
-
 
         // Search for existing attendance for same student + lesson + same day
         const existing = await prisma.attendance.findFirst({
