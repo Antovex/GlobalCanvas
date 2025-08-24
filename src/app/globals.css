@@ -89,12 +89,54 @@
     font-size: 14px !important;
 }
 
+/* Event styling */
 .rbc-event {
     border: none !important;
     color: black !important;
     padding: 10px !important;
-    margin: 10px !important;
+    margin: 0px 5px !important;
     width: 99% !important;
+    display: flex !important;
+    flex-direction: column !important; /* stack time above/below title */
+    align-items: flex-start !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    padding: 8px !important;
+}
+
+/* Ensure internal pieces take full width and wrap text */
+.rbc-event .rbc-event-label,
+.rbc-event .rbc-event-content,
+.rbc-event .rbc-event-time {
+    width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+
+/* Style the time line so it wraps and is slightly smaller */
+.rbc-event .rbc-event-label,
+.rbc-event .rbc-event-time {
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+    color: rgba(0,0,0,0.65) !important;
+    margin-bottom: 6px !important;
+}
+
+/* Keep title readable and allow multi-line */
+.rbc-event .rbc-event-content {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+}
+
+/* Responsive tweak: reduce text on very small widths */
+@media (max-width: 640px) {
+    .rbc-event .rbc-event-label,
+    .rbc-event .rbc-event-content {
+        font-size: 11px !important;
+    }
 }
 
 .rbc-event:nth-child(1) {

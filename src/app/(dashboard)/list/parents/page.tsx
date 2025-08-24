@@ -6,6 +6,7 @@ import TableSearch from "@/components/TableSearch";
 import { getUserRole } from "@/lib/util"; 
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { getUserRole } from "@/lib/util";
 import { Parent, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 // import Link from "next/link";
@@ -20,7 +21,7 @@ const ParentListPage = async ({
     searchParams: { [key: string]: string | undefined } | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
     const role = await getUserRole();
-
+  
     // const { page, ...queryParams } = searchParams;
     const rawSearchParams = await searchParams;
     const normalized: Record<string, string | undefined> = {};
@@ -53,8 +54,8 @@ const ParentListPage = async ({
                             },
                         ];
                         break;
-                    default:
-                        break;
+                        default:
+                            break;
                 }
             }
         }
