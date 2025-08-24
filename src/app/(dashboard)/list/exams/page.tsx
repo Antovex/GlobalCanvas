@@ -18,14 +18,7 @@ type ExamList = Exam & {
     };
 };
 
-const ExamListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const ExamListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();
 

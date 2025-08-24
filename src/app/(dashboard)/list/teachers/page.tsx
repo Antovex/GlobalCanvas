@@ -26,14 +26,7 @@ import Link from "next/link";
 // Teacher schema coming from prisma (prisma client)
 type TeacherList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
-const TeacherListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const TeacherListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
 
     // const { page, ...queryParams } = searchParams;

@@ -11,14 +11,7 @@ import Image from "next/image";
 
 type LessonList = Lesson & { teacher: Teacher; subject: Subject; class: Class };
 
-const LessonListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const LessonListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
 
     // const { page, ...queryParams } = searchParams;

@@ -12,14 +12,7 @@ import AttendanceDatePicker from "@/components/AttendanceDatePicker";
 
 type StudentList = Student & { class: { name: string } };
 
-const AttendancePage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const AttendancePage = async ({ searchParams }: any) => {
     const role = await getUserRole();
 
     // const { page, ...queryParams } = searchParams;

@@ -11,14 +11,20 @@ import Image from "next/image";
 
 type AnnouncementList = Announcement & { class: Class };
 
-const AnnouncementListPage = async ({
+const AnnouncementListPage = async ({ searchParams }: any) => {
+    {
+        /* 
+        {
     searchParams,
 }: {
     // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+    // searchParams:
+    //     | { [key: string]: string | undefined }
+    //     | Promise<{ [key: string]: string | string[] | undefined }>;
+}
+    */
+    }
+
     // Get role inside the function
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();

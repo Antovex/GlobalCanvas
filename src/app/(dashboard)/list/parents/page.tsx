@@ -3,7 +3,6 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { getUserRole } from "@/lib/util"; 
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserRole } from "@/lib/util";
@@ -14,12 +13,7 @@ import Image from "next/image";
 type ParentList = Parent & { students: Student[] };
 
 
-const ParentListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams: { [key: string]: string | undefined } | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const ParentListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
   
     // const { page, ...queryParams } = searchParams;

@@ -11,14 +11,7 @@ import Image from "next/image";
 
 type ClassList = Class & { supervisor: Teacher };
 
-const ClassListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const ClassListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
 
     // const { page, ...queryParams } = searchParams;

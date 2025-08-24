@@ -18,14 +18,7 @@ type AssignmentList = Assignment & {
     };
 };
 
-const AssignmentListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const AssignmentListPage = async ({ searchParams }: any) => {
     // Get role and userId of current user
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();

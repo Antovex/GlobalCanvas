@@ -5,6 +5,7 @@ import Link from "next/link";
 import Performance from "@/components/Performance";
 import FormModal from "@/components/FormModal";
 import { role } from "@/lib/data";
+import BigCalendarContainer from "@/components/BigCalendarContainer";
 
 const SingleTeacherPage = () => {
     return (
@@ -174,7 +175,8 @@ const SingleTeacherPage = () => {
                 {/* BOTTOM */}
                 <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
                     <h1>Teacher&apos;s Schedule</h1>
-                    <BigCalendar />
+                    {/* TODO: Hardcoded value, have to change later*/}
+                    <BigCalendarContainer type="teacherId" id={"teacher1"}/>
                 </div>
             </div>
             {/* RIGHT */}

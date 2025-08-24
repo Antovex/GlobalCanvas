@@ -12,12 +12,7 @@ import Image from "next/image";
 type SubjectList = Subject & { teachers: Teacher[] };
 
 
-const SubjectListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams: { [key: string]: string | undefined } | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const SubjectListPage = async ({ searchParams }: any) => {
 
     const role = await getUserRole();
 

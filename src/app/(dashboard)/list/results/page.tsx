@@ -21,14 +21,7 @@ type ResultList = {
     startTime: Date;
 };
 
-const ResultListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const ResultListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();
 

@@ -12,14 +12,7 @@ import Image from "next/image";
 
 type EventList = Event & { class: Class };
 
-const EventListPage = async ({
-    searchParams,
-}: {
-    // searchParams: { [key: string]: string | undefined };
-    searchParams:
-        | { [key: string]: string | undefined }
-        | Promise<{ [key: string]: string | string[] | undefined }>;
-}) => {
+const EventListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();
 
