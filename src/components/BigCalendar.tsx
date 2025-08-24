@@ -46,20 +46,27 @@ const BigCalendar = ({
     const [currentDate, setCurrentDate] = useState<Date>(baseDate);
 
     // when lessons change, keep calendar focused sensibly (prefer today if lesson exists today)
+    // Only update state when the target date actually differs from currentDate to avoid
+    // creating new Date objects every render and triggering an infinite render loop.
     useEffect(() => {
         const lessonOnToday = lessons.find((ev) => isSameDay(new Date(ev.start), new Date()));
+        let targetDate: Date;
+
         if (lessonOnToday) {
-            const d = new Date(lessonOnToday.start);
-            d.setHours(0, 0, 0, 0);
-            setCurrentDate(d);
+            targetDate = new Date(lessonOnToday.start);
         } else if (lessons[0]?.start) {
-            const d = new Date(lessons[0].start);
-            d.setHours(0, 0, 0, 0);
-            setCurrentDate(d);
+            targetDate = new Date(lessons[0].start);
         } else {
-            setCurrentDate(today);
+            targetDate = today;
         }
-    }, [lessons, today]); // run when lessons or today changes
+
+        targetDate.setHours(0, 0, 0, 0);
+
+        // compare timestamps to decide whether to update state
+        if (!currentDate || targetDate.getTime() !== currentDate.getTime()) {
+            setCurrentDate(targetDate);
+        }
+    }, [lessons, today, currentDate]); // run when lessons, today or currentDate changes
     // [data?.length]
 
     const handleView = (v: View) => {
