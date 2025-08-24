@@ -21,14 +21,22 @@ type AssignmentList = Assignment & {
 const AssignmentListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams:
+        | { [key: string]: string | undefined }
+        | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-
     // Get role and userId of current user
     const role = await getUserRole();
     const currentUserId = await getCurrentUserId();
 
-    const { page, ...queryParams } = searchParams;
+    // const { page, ...queryParams } = searchParams;
+    const rawSearchParams = await searchParams;
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
 
@@ -49,11 +57,11 @@ const AssignmentListPage = async ({
                         break;
                     case "search":
                         query.lesson.subject = {
-                                name: {
-                                    contains: value,
-                                    mode: "insensitive",
-                                },
-                            };
+                            name: {
+                                contains: value,
+                                mode: "insensitive",
+                            },
+                        };
                         break;
                     default:
                         break;
@@ -144,7 +152,7 @@ const AssignmentListPage = async ({
             accessor: "dueDate",
             className: "hidden md:table-cell text-center",
         },
-        ...((role === "admin" || role === "teacher")
+        ...(role === "admin" || role === "teacher"
             ? [
                   {
                       header: "Actions",
@@ -152,7 +160,13 @@ const AssignmentListPage = async ({
                       className: "text-center",
                   },
               ]
-            : []),
+            : [
+                  {
+                      header: " ",
+                      accessor: "empty_action",
+                      className: "text-center",
+                  },
+              ]),
     ];
 
     // Make each row of the table for passing it to the Table component
@@ -175,19 +189,19 @@ const AssignmentListPage = async ({
                 <div className="flex items-center justify-center gap-2 px-4">
                     {/* EDIT or DELETE AN ASSIGNMENT */}
                     {(role === "admin" || role === "teacher") && (
-                            <>
-                                <FormModal
-                                    table="assignment"
-                                    type="update"
-                                    data={item}
-                                />
-                                <FormModal
-                                    table="assignment"
-                                    type="delete"
-                                    id={item.id}
-                                />
-                            </>
-                        )}
+                        <>
+                            <FormModal
+                                table="assignment"
+                                type="update"
+                                data={item}
+                            />
+                            <FormModal
+                                table="assignment"
+                                type="delete"
+                                id={item.id}
+                            />
+                        </>
+                    )}
                 </div>
             </td>
         </tr>

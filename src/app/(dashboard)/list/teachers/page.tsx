@@ -26,17 +26,25 @@ import Link from "next/link";
 // Teacher schema coming from prisma (prisma client)
 type TeacherList = Teacher & { subjects: Subject[] } & { classes: Class[] };
 
-
 const TeacherListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams:
+        | { [key: string]: string | undefined }
+        | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-
     const role = await getUserRole();
 
-    const { page, ...queryParams } = searchParams;
-
+    // const { page, ...queryParams } = searchParams;
+    // searchParams can be a promise in newer Next.js versions — await it first
+    const rawSearchParams = await searchParams;
+    // normalize values (take first element if it's an array)
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
     const p = page ? parseInt(page) : 1;
 
     // URL PARAMS CONDITIONS
@@ -89,7 +97,7 @@ const TeacherListPage = async ({
             </div>
         );
     }
-    
+
     const columns = [
         {
             header: "Info",
@@ -121,13 +129,23 @@ const TeacherListPage = async ({
             accessor: "address",
             className: "hidden lg:table-cell text-center",
         },
-        ...(role === "admin" ? [{
-            header: "Actions",
-            accessor: "action",
-            className: "text-center",
-        }] : []),
+        ...(role === "admin" || role === "teacher"
+            ? [
+                  {
+                      header: "Actions",
+                      accessor: "action",
+                      className: "text-center",
+                  },
+              ]
+            : [
+                  {
+                      header: " ",
+                      accessor: "empty_action",
+                      className: "text-center",
+                  },
+              ]),
     ];
-    
+
     const renderRow = (item: TeacherList) => (
         <tr
             key={item.id}
@@ -142,7 +160,8 @@ const TeacherListPage = async ({
                     className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
                 />
                 <div className="flex flex-col">
-                    <h3 className="font-semibold">{item.name}</h3> {/* + " " + item.surname */}
+                    <h3 className="font-semibold">{item.name}</h3>{" "}
+                    {/* + " " + item.surname */}
                     <p className="text-xs text-gray-500">{item?.email}</p>
                 </div>
             </td>

@@ -1,24 +1,18 @@
 import DbError from "@/components/DbError";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getCurrentUserId, getUserRole } from "@/lib/util";
-import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
+import { getUserRole } from "@/lib/util";
+import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
-// import Link from "next/link";
+import AttendanceToggle from "@/components/AttendanceToggle";
+import AttendanceDatePicker from "@/components/AttendanceDatePicker";
 
-type ExamList = Exam & {
-    lesson: {
-        subject: Subject;
-        class: Class;
-        teacher: Teacher;
-    };
-};
+type StudentList = Student & { class: { name: string } };
 
-const ExamListPage = async ({
+const AttendancePage = async ({
     searchParams,
 }: {
     // searchParams: { [key: string]: string | undefined };
@@ -27,7 +21,6 @@ const ExamListPage = async ({
         | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
     const role = await getUserRole();
-    const currentUserId = await getCurrentUserId();
 
     // const { page, ...queryParams } = searchParams;
     const rawSearchParams = await searchParams;
@@ -39,27 +32,20 @@ const ExamListPage = async ({
 
     const p = page ? parseInt(page) : 1;
 
-    // URL PARAMS CONDITIONS
-    const query: Prisma.ExamWhereInput = {};
+    // Date for date picker from URL params
+    const selectedDateRaw = normalized.date; // format expected: YYYY-MM-DD or ISO
+    const selectedDate = selectedDateRaw ? new Date(selectedDateRaw).toISOString() : undefined;
 
-    query.lesson = {};
+
+    // URL PARAMS CONDITIONS
+    const query: Prisma.StudentWhereInput = {};
+
     if (queryParams) {
         for (const [key, value] of Object.entries(queryParams)) {
             if (value !== undefined) {
                 switch (key) {
-                    case "classId":
-                        query.lesson.classId = parseInt(value);
-                        break;
-                    case "teacherId":
-                        query.lesson.teacherId = value;
-                        break;
                     case "search":
-                        query.lesson.subject = {
-                            name: {
-                                contains: value,
-                                mode: "insensitive",
-                            },
-                        };
+                        query.name = { contains: value, mode: "insensitive" };
                         break;
                     default:
                         break;
@@ -68,55 +54,20 @@ const ExamListPage = async ({
         }
     }
 
-    // ROLE CONDITIONS
-    switch (role) {
-        case "admin":
-            break;
-        case "teacher":
-            query.lesson.teacherId = currentUserId!;
-            break;
-        case "student":
-            query.lesson.class = {
-                students: {
-                    some: {
-                        id: currentUserId!,
-                    },
-                },
-            };
-            break;
-        case "parent":
-            query.lesson.class = {
-                students: {
-                    some: {
-                        parentId: currentUserId!,
-                    },
-                },
-            };
-            break;
-        default:
-            break;
-    }
-
     let data = [];
     let count = 0;
     let dbError = null;
     try {
         [data, count] = await prisma.$transaction([
-            prisma.exam.findMany({
+            prisma.student.findMany({
                 where: query,
                 include: {
-                    lesson: {
-                        select: {
-                            subject: { select: { name: true } },
-                            teacher: { select: { name: true, surname: true } },
-                            class: { select: { name: true } },
-                        },
-                    },
+                    class: { select: {name: true} },
                 },
                 take: ITEM_PER_PAGE,
                 skip: ITEM_PER_PAGE * (p - 1),
             }),
-            prisma.exam.count({
+            prisma.student.count({
                 where: query,
             }),
         ]);
@@ -129,32 +80,51 @@ const ExamListPage = async ({
         );
     }
 
+    // --- load existing attendance for this lesson + day so we can show initial state ---
+    const LESSON_ID = 1; // TODO: replace with selected lesson id (or pass from UI)
+    const parsedDateForQuery = selectedDate ? new Date(selectedDate) : new Date();
+    const dayStart = new Date(parsedDateForQuery);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const studentIds = (data as StudentList[]).map((s) => s.id);
+    const attendanceByStudent: Record<string, any> = {};
+    if (studentIds.length > 0) {
+        const attendances = await prisma.attendance.findMany({
+            where: {
+                lessonId: LESSON_ID,
+                studentId: { in: studentIds },
+                date: { gte: dayStart, lt: dayEnd },
+            },
+        });
+        for (const a of attendances) {
+            attendanceByStudent[a.studentId] = a;
+        }
+    }
+    // --- end attendance preload ---
+
     const columns = [
         {
-            header: "Subject Name",
-            accessor: "name",
+            header: "Info",
+            accessor: "info",
             className: "text-center",
         },
         {
-            header: "Class",
-            accessor: "class",
-            className: "text-center",
-        },
-        {
-            header: "Teacher",
-            accessor: "teacher",
+            header: "Student ID",
+            accessor: "studentId",
             className: "hidden md:table-cell text-center",
         },
         {
-            header: "Date",
-            accessor: "date",
+            header: "Grade",
+            accessor: "grade",
             className: "hidden md:table-cell text-center",
         },
         ...(role === "admin" || role === "teacher"
             ? [
                   {
-                      header: "Actions",
-                      accessor: "action",
+                      header: "Attendance",
+                      accessor: "attendance",
                       className: "text-center",
                   },
               ]
@@ -168,33 +138,48 @@ const ExamListPage = async ({
     ];
 
     // Make each row of the table for passing it to the Table component
-    const renderRow = (item: ExamList) => (
+    const renderRow = (item: StudentList) => (
         <tr
             key={item.id}
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
         >
             <td className="flex items-center justify-center gap-4 p-4">
-                {item.lesson.subject.name}
+                <Image
+                    src={item.img || "/noAvatar.png"}
+                    alt="Student photo"
+                    width={40}
+                    height={40}
+                    className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
+                />
+                <div className="flex flex-col items-center justify-center">
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-xs text-gray-500">{item.class.name}</p>
+                </div>
             </td>
-            <td className="text-center">{item.lesson.class.name}</td>
             <td className="hidden md:table-cell text-center">
-                {item.lesson.teacher.name} {item.lesson.teacher.surname}
+                {item.username}
             </td>
             <td className="hidden md:table-cell text-center">
-                {new Intl.DateTimeFormat("en-US").format(item.startTime)}
+                {item.class.name[0]}
             </td>
             <td>
                 <div className="flex items-center justify-center gap-2 px-4">
-                    {/* EDIT or DELETE AN EXAM*/}
                     {(role === "admin" || role === "teacher") && (
-                        <>
-                            <FormModal table="exam" type="update" data={item} />
-                            <FormModal
-                                table="exam"
-                                type="delete"
-                                id={item.id}
-                            />
-                        </>
+                        // map current DB record to the toggle's initial value
+                        (() => {
+                            const att = attendanceByStudent[item.id];
+                            const initial = att ? (att.present ? "PRESENT" : "ABSENT") : null;
+                            return (
+                                <AttendanceToggle
+                                    // force remount when selectedDate changes
+                                    // key={`${item.id}-${selectedDate ?? "today"}`}
+                                    studentId={item.id}
+                                    lessonId={LESSON_ID}
+                                    date={selectedDate}
+                                    initial={initial}
+                                />
+                            );
+                        })()
                     )}
                 </div>
             </td>
@@ -206,15 +191,16 @@ const ExamListPage = async ({
             {/* TOP BAR */}
             <div className="flex items-center justify-between">
                 <h1 className="hidden md:block text-lg font-semibold">
-                    All Exams
+                    All Students
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <TableSearch placeholder="Search with Subject Name..." />
+                    <AttendanceDatePicker initialDate={selectedDateRaw} />
+                    <TableSearch placeholder="Search with Student Name..." />
                     {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow"
-                            aria-label="Filter classes"
+                            aria-label="Filter students"
                         >
                             <Image
                                 src="/filter.png"
@@ -232,10 +218,18 @@ const ExamListPage = async ({
                                 height={14}
                             />
                         </button>
-                        {/* Add new exam button */}
-                        {(role === "admin" || role === "teacher") && (
-                            <FormModal table="exam" type="create" />
-                        )}
+                        {/* Add new student button */}
+                        {/* {role === "admin" && (
+                            // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
+                            //     <Image
+                            //         src="/plus.png"
+                            //         alt=""
+                            //         width={14}
+                            //         height={14}
+                            //     />
+                            // </button>
+                            <FormModal table="student" type="create" />
+                        )} */}
                     </div>
                 </div>
             </div>
@@ -249,4 +243,4 @@ const ExamListPage = async ({
     );
 };
 
-export default ExamListPage;
+export default AttendancePage;

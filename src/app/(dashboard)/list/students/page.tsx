@@ -5,23 +5,30 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { getCurrentUserId, getUserRole } from "@/lib/util";
+import { getUserRole } from "@/lib/util";
 import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
 type StudentList = Student & { class: { name: string } };
 
-
 const StudentListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams:
+        | { [key: string]: string | undefined }
+        | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-
     const role = await getUserRole();
 
-    const { page, ...queryParams } = searchParams;
+    // const { page, ...queryParams } = searchParams;
+    const rawSearchParams = await searchParams;
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
 
@@ -103,13 +110,23 @@ const StudentListPage = async ({
             accessor: "address",
             className: "hidden lg:table-cell text-center",
         },
-        ...(role === "admin" ? [{
-            header: "Actions",
-            accessor: "action",
-            className: "text-center",
-        }] : []),
+        ...(role === "admin" || role === "teacher"
+            ? [
+                  {
+                      header: "Actions",
+                      accessor: "action",
+                      className: "text-center",
+                  },
+              ]
+            : [
+                  {
+                      header: " ",
+                      accessor: "empty_action",
+                      className: "text-center",
+                  },
+              ]),
     ];
-    
+
     // Make each row of the table for passing it to the Table component
     const renderRow = (item: StudentList) => (
         <tr
@@ -129,8 +146,12 @@ const StudentListPage = async ({
                     <p className="text-xs text-gray-500">{item.class.name}</p>
                 </div>
             </td>
-            <td className="hidden md:table-cell text-center">{item.username}</td>
-            <td className="hidden md:table-cell text-center">{item.class.name[0]}</td>
+            <td className="hidden md:table-cell text-center">
+                {item.username}
+            </td>
+            <td className="hidden md:table-cell text-center">
+                {item.class.name[0]}
+            </td>
             <td className="hidden md:table-cell text-center">{item.phone}</td>
             <td className="hidden md:table-cell text-center">{item.address}</td>
             <td>

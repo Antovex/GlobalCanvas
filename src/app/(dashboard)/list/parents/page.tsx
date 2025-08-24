@@ -3,7 +3,7 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { parentsData, role } from "@/lib/data";
+import { getUserRole } from "@/lib/util"; 
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserRole } from "@/lib/util";
@@ -17,11 +17,18 @@ type ParentList = Parent & { students: Student[] };
 const ParentListPage = async ({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+    // searchParams: { [key: string]: string | undefined };
+    searchParams: { [key: string]: string | undefined } | Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
     const role = await getUserRole();
-
-    const { page, ...queryParams } = searchParams;
+  
+    // const { page, ...queryParams } = searchParams;
+    const rawSearchParams = await searchParams;
+    const normalized: Record<string, string | undefined> = {};
+    for (const [k, v] of Object.entries(rawSearchParams || {})) {
+        normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
+    }
+    const { page, ...queryParams } = normalized;
     
     const p = page ? parseInt(page) : 1;
     
