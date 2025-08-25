@@ -61,7 +61,7 @@ export default function AttendanceDatePicker({ initialDate }: { initialDate?: st
                     value={formatDisplayDate(value)}
                     onClick={() => setShowCalendar(!showCalendar)}
                     readOnly
-                    className="px-2 py-1 rounded-md border text-sm cursor-pointer bg-white min-w-[8rem] text-center"
+                    className="px-2 py-1 rounded-md border text-sm cursor-pointer bg-white w-28 text-center"
                     aria-label="Select attendance date"
                     placeholder="Select date"
                 />
