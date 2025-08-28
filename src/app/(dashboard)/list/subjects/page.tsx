@@ -102,7 +102,7 @@ const SubjectListPage = async ({ searchParams }: any) => {
                     {/* EDIT or DELETE A SUBJECT */}
                     {role === "admin" && (
                         <>
-                            <FormModal table="subject" type="update" data={item} />
+                            <FormModal table="subject" type="update" data={item}/>
                             <FormModal table="subject" type="delete" id={item.id} />
                         </>
                     )}
