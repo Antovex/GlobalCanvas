@@ -72,7 +72,7 @@ const SubjectForm = ({
                     : "Update the subject"}
             </h1>
 
-            <div className="flex justify-between flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4">
                 <InputField
                     label="Subject name"
                     name="name"
