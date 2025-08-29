@@ -1,4 +1,5 @@
 import DbError from "@/components/DbError";
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -102,8 +103,8 @@ const SubjectListPage = async ({ searchParams }: any) => {
                     {/* EDIT or DELETE A SUBJECT */}
                     {role === "admin" && (
                         <>
-                            <FormModal table="subject" type="update" data={item}/>
-                            <FormModal table="subject" type="delete" id={item.id} />
+                            <FormContainer table="subject" type="update" data={item}/>
+                            <FormContainer table="subject" type="delete" id={item.id} />
                         </>
                     )}
                 </div>
@@ -145,7 +146,7 @@ const SubjectListPage = async ({ searchParams }: any) => {
                         </button>
                         {/* Add new subject button */}
                         {role === "admin" && (
-                            <FormModal table="subject" type="create" />
+                            <FormContainer table="subject" type="create" />
                         )}
                     </div>
                 </div>
