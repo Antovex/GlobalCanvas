@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Dispatch, SetStateAction, useActionState, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { FormContainerProps } from "./FormContainer";
 
 
 const deleteActionMap = {
@@ -38,13 +39,14 @@ const forms: {
     [key: string]: (
         setOpen: Dispatch<SetStateAction<boolean>>,
         type: "create" | "update",
-        data?: any
+        data?: any,
+        relatedData?: any, 
     ) => JSX.Element;
 } = {
     teacher: (setOpen, type, data) => <TeacherForm type={type} data={data} />,
     student: (setOpen, type, data) => <StudentForm type={type} data={data} />,
-    subject: (setOpen, type, data) => (
-        <SubjectForm type={type} data={data} setOpen={setOpen} />
+    subject: (setOpen, type, data, relatedData) => (
+        <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData}/>
     ),
 };
 
@@ -53,24 +55,8 @@ const FormModal = ({
     type,
     data,
     id,
-}: {
-    table:
-        | "teacher"
-        | "student"
-        | "parent"
-        | "subject"
-        | "class"
-        | "lesson"
-        | "exam"
-        | "assignment"
-        | "result"
-        | "attendance"
-        | "event"
-        | "announcement";
-    type: "create" | "update" | "delete";
-    data?: any;
-    id?: number | string;
-}) => {
+    relatedData,
+}: FormContainerProps & { relatedData?: any }) => {
     const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
     const bgColor =
         type === "create"
@@ -130,7 +116,7 @@ const FormModal = ({
                 </form>
             );
         } else if ((type === "create" || type === "update") && forms[table]) {
-            return forms[table](setOpen, type, data);
+            return forms[table](setOpen, type, data, relatedData);
         } else {
             return (
                 <div className="text-center text-red-500 font-semibold py-8">
