@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteClass, deleteSubject } from "@/lib/actions";
+import { deleteClass, deleteSubject, deleteTeacher } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
@@ -13,13 +13,12 @@ import {
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { FormContainerProps } from "./FormContainer";
-import ClassForm from "./forms/ClassForm";
 
 const deleteActionMap = {
     subject: deleteSubject,
     class: deleteClass,
+    teacher: deleteTeacher,
     // TODO: OTHER DELETE ACTIONS
-    teacher: deleteSubject,
     student: deleteSubject,
     exam: deleteSubject,
     parent: deleteSubject,
@@ -40,6 +39,9 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
     loading: () => <h1>Loading...</h1>,
 });
+const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+    loading: () => <h1>Loading...</h1>,
+});
 
 const forms: {
     [key: string]: (
@@ -49,7 +51,14 @@ const forms: {
         relatedData?: any
     ) => JSX.Element;
 } = {
-    teacher: (setOpen, type, data) => <TeacherForm type={type} data={data} />,
+    teacher: (setOpen, type, data, relatedData) => (
+        <TeacherForm
+            type={type}
+            data={data}
+            setOpen={setOpen}
+            relatedData={relatedData}
+        />
+    ),
     student: (setOpen, type, data) => <StudentForm type={type} data={data} />,
     subject: (setOpen, type, data, relatedData) => (
         <SubjectForm
