@@ -1,18 +1,24 @@
 "use client";
 
-import { deleteSubject } from "@/lib/actions";
+import { deleteClass, deleteSubject } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useActionState, useEffect, useState } from "react";
+import {
+    Dispatch,
+    SetStateAction,
+    useActionState,
+    useEffect,
+    useState,
+} from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { FormContainerProps } from "./FormContainer";
-
+import ClassForm from "./forms/ClassForm";
 
 const deleteActionMap = {
     subject: deleteSubject,
+    class: deleteClass,
     // TODO: OTHER DELETE ACTIONS
-    class: deleteSubject,
     teacher: deleteSubject,
     student: deleteSubject,
     exam: deleteSubject,
@@ -40,13 +46,26 @@ const forms: {
         setOpen: Dispatch<SetStateAction<boolean>>,
         type: "create" | "update",
         data?: any,
-        relatedData?: any, 
+        relatedData?: any
     ) => JSX.Element;
 } = {
     teacher: (setOpen, type, data) => <TeacherForm type={type} data={data} />,
     student: (setOpen, type, data) => <StudentForm type={type} data={data} />,
     subject: (setOpen, type, data, relatedData) => (
-        <SubjectForm type={type} data={data} setOpen={setOpen} relatedData={relatedData}/>
+        <SubjectForm
+            type={type}
+            data={data}
+            setOpen={setOpen}
+            relatedData={relatedData}
+        />
+    ),
+    class: (setOpen, type, data, relatedData) => (
+        <ClassForm
+            type={type}
+            data={data}
+            setOpen={setOpen}
+            relatedData={relatedData}
+        />
     ),
 };
 
@@ -105,7 +124,13 @@ const FormModal = ({
         if (type === "delete" && id) {
             return (
                 <form action={formAction} className="p-4 flex flex-col gap-4">
-                    <input type="text | number" name="id" value={id} hidden readOnly/>
+                    <input
+                        type="text | number"
+                        name="id"
+                        value={id}
+                        hidden
+                        readOnly
+                    />
                     <span className="text-center font-medium">
                         All data will be lost. Are you sure you want to delete
                         this {table}?

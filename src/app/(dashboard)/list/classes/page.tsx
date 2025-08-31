@@ -1,4 +1,5 @@
 import DbError from "@/components/DbError";
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -127,12 +128,12 @@ const ClassListPage = async ({ searchParams }: any) => {
                     {/* EDIT or DELETE A CLASS */}
                     {role === "admin" && (
                         <>
-                            <FormModal
+                            <FormContainer
                                 table="class"
                                 type="update"
                                 data={item}
                             />
-                            <FormModal
+                            <FormContainer
                                 table="class"
                                 type="delete"
                                 id={item.id}
@@ -177,7 +178,7 @@ const ClassListPage = async ({ searchParams }: any) => {
                         </button>
                         {/* Add new subject button */}
                         {role === "admin" && (
-                            <FormModal table="class" type="create" />
+                            <FormContainer table="class" type="create" />
                         )}
                     </div>
                 </div>
