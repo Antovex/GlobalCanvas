@@ -181,7 +181,6 @@ export const createTeacher = async (
     data: TeacherSchema
 ) => {
     try {
-        console.log(data);
         const client = await clerkClient();
         const user = await client.users.createUser({
             username: data.username,

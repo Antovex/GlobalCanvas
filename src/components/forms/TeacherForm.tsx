@@ -38,6 +38,9 @@ const TeacherForm = ({
     });
 
     const [img, setImg] = useState<any>();
+    const [uploadState, setUploadState] = useState<
+        "idle" | "uploading" | "uploaded" | "error"
+    >("idle");
 
     const [state, formAction] = useActionState(
         type === "create" ? createTeacher : updateTeacher,
@@ -49,7 +52,6 @@ const TeacherForm = ({
 
     const onSubmit = handleSubmit((d) => {
         if (data?.id) d.id = data.id;
-        console.log(d);
         startTransition(() => {
             formAction({ ...d, img: img?.secure_url });
         });
@@ -190,52 +192,133 @@ const TeacherForm = ({
                 </div>
                 {/* Copilot suggestions : 
 
-                Persist Cloudinary public_id: add imgPublicId to Prisma models (Teacher/Student), run migration.
-
-                Send public_id from upload widget (attach img.public_id and secure_url to form payload).
-
-                Server-side: store imgPublicId, delete old image on update via cloudinary.uploader.destroy(public_id).
-
-                Switch to signed uploads for production (generate signature server-side) or restrict unsigned preset.
-
-                Use responsive Cloudinary transforms (f_auto,q_auto,w_...,c_fill) and serve via next/image when possible.
-
                 Disable submit while upload in progress and show upload state (uploading/failed/success).
 
                 Optional: add server endpoint to delete orphaned images, and a periodic cleanup job.
                  */}
 
                 {/* TODO: Add a way to verify that the image uploaded successfully */}
-                <CldUploadWidget
-                    uploadPreset="school"
-                    onSuccess={(result, { widget }) => {
-                        setImg(result.info);
-                        widget.close();
-                    }}
-                >
-                    {({ open }) => {
-                        return (
-                            <div
-                                className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-                                onClick={() => open()}
-                            >
-                                <Image
-                                    src="/upload.png"
-                                    alt=""
-                                    width={28}
-                                    height={28}
-                                />
-                                <span>Upload a photo</span>
+                {type === "create" ? (
+                    <CldUploadWidget
+                        uploadPreset="school"
+                        options={{
+                            maxFiles: 1,
+                            sources: ["local", "url", "camera"],
+                        }}
+                        onUploadReady={() => setUploadState("uploading")}
+                        onSuccess={(result, { widget }) => {
+                            setImg(result.info);
+                            setUploadState("uploaded");
+                            widget.close();
+                        }}
+                        onError={() => setUploadState("error")}
+                    >
+                        {({ open }) => {
+                            return (
+                                <div className="flex flex-col justify-center items-center gap-2 md:w-1/4">
+                                    <div
+                                        className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+                                        onClick={() => {
+                                            setUploadState("idle");
+                                            open();
+                                        }}
+                                    >
+                                        <Image
+                                            src="/upload.png"
+                                            alt=""
+                                            width={28}
+                                            height={28}
+                                        />
+                                        {uploadState !== "uploaded" && (
+                                            <span>
+                                                {uploadState === "uploading"
+                                                    ? "Uploading…"
+                                                    : uploadState === "error"
+                                                    ? "Retry upload"
+                                                    : "Upload a photo"}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* status badge */}
+                                    <span
+                                        className={`text-xs px-2 py-1 rounded-md font-medium ${
+                                            uploadState === "uploaded"
+                                                ? "bg-green-50 text-green-700"
+                                                : uploadState === "uploading"
+                                                ? "bg-yellow-50 text-yellow-700"
+                                                : uploadState === "error"
+                                                ? "bg-red-50 text-red-700"
+                                                : "bg-gray-50 text-slate-600"
+                                        }`}
+                                    >
+                                        {uploadState === "idle"
+                                            ? ""
+                                            : uploadState === "uploading"
+                                            ? "Uploading"
+                                            : uploadState === "uploaded"
+                                            ? "Uploaded"
+                                            : "Error"}
+                                    </span>
+
+                                    {/* preview + remove */}
+                                    {img?.secure_url && (
+                                        <div className="flex items-center gap-2">
+                                            <Image
+                                                src={img.secure_url}
+                                                alt="preview"
+                                                width={48}
+                                                height={48}
+                                                className="rounded-md object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="text-xs text-red-600 px-2 py-1 rounded-md border border-red-100 bg-red-50"
+                                                onClick={() => {
+                                                    setImg(undefined);
+                                                    setUploadState("idle");
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }}
+                    </CldUploadWidget>
+                ) : (
+                    // read-only preview for updates
+                    <div className="flex items-center gap-3">
+                        {data?.img ? (
+                            <Image
+                                src={data.img}
+                                alt="Teacher photo"
+                                width={56}
+                                height={56}
+                                className="rounded-md"
+                            />
+                        ) : (
+                            <div className="w-14 h-14 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-400">
+                                No photo
                             </div>
-                        );
-                    }}
-                </CldUploadWidget>
+                        )}
+                    </div>
+                )}
             </div>
             {state.error && (
                 <span className="text-red-500">Something went wrong!</span>
             )}
-            <button className="bg-blue-400 text-white p-2 rounded-md">
-                {type === "create" ? "Create" : "Update"}
+            <button
+                className="bg-blue-400 text-white p-2 rounded-md"
+                type="submit"
+                disabled={uploadState === "uploading"}
+            >
+                {uploadState === "uploading"
+                    ? "Uploading…"
+                    : type === "create"
+                    ? "Create"
+                    : "Update"}
             </button>
         </form>
     );
