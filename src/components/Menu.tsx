@@ -74,9 +74,15 @@ const menuItems = [
             },
             {
                 icon: "/attendance.png",
+                label: "Teacher Attendance",
+                href: "/list/teacher-attendance",
+                visible: ["admin"],
+            },
+            {
+                icon: "/attendance.png",
                 label: "My Attendance",
                 href: "/list/myattendance",
-                visible: ["admin", "teacher", "student", "teacher"],
+                visible: ["teacher", "student"],
             },
             {
                 icon: "/calendar.png",
@@ -84,12 +90,12 @@ const menuItems = [
                 href: "/list/events",
                 visible: ["admin", "teacher", "student", "parent"],
             },
-            {
-                icon: "/message.png",
-                label: "Messages",
-                href: "/list/messages",
-                visible: ["admin", "teacher", "student", "parent"],
-            },
+            // {
+            //     icon: "/message.png",
+            //     label: "Messages",
+            //     href: "/list/messages",
+            //     visible: ["admin", "teacher", "student", "parent"],
+            // },
             {
                 icon: "/announcement.png",
                 label: "Announcements",
@@ -98,29 +104,29 @@ const menuItems = [
             },
         ],
     },
-    {
-        title: "OTHER",
-        items: [
-            {
-                icon: "/profile.png",
-                label: "Profile",
-                href: "/profile",
-                visible: ["admin", "teacher", "student", "parent"],
-            },
-            {
-                icon: "/setting.png",
-                label: "Settings",
-                href: "/settings",
-                visible: ["admin", "teacher", "student", "parent"],
-            },
-            {
-                icon: "/logout.png",
-                label: "Logout",
-                href: "/logout",
-                visible: ["admin", "teacher", "student", "parent"],
-            },
-        ],
-    },
+    // {
+    //     title: "OTHER",
+    //     items: [
+    //         {
+    //             icon: "/profile.png",
+    //             label: "Profile",
+    //             href: "/profile",
+    //             visible: ["admin", "teacher", "student", "parent"],
+    //         },
+    //         {
+    //             icon: "/setting.png",
+    //             label: "Settings",
+    //             href: "/settings",
+    //             visible: ["admin", "teacher", "student", "parent"],
+    //         },
+    //         {
+    //             icon: "/logout.png",
+    //             label: "Logout",
+    //             href: "/logout",
+    //             visible: ["admin", "teacher", "student", "parent"],
+    //         },
+    //     ],
+    // },
 ];
 
 const Menu = async () => {
