@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
+import FormContainer from "@/components/FormContainer";
 
 const SingleStudentPage = async ({ params }: { params: { id: string } }) => {
     const role = await getUserRole();
@@ -49,9 +50,18 @@ const SingleStudentPage = async ({ params }: { params: { id: string } }) => {
                         </div>
                         {/* TEXT CONTAINER */}
                         <div className="w-2/3 flex flex-col justify-between gap-4">
-                            <h1 className="text-xl font-semibold">
-                                {student.name + " " + student.surname}
-                            </h1>
+                            <div className="flex items-center gap-4">
+                                <h1 className="text-xl font-semibold">
+                                    {student.name + " " + student.surname}
+                                </h1>
+                                {role === "admin" && (
+                                    <FormContainer
+                                        table="student"
+                                        type="update"
+                                        data={student}
+                                    />
+                                )}
+                            </div>
                             {/* <p className="text-sm text-gray-500">
                                 Lorem, ipsum dolor sit amet consectetur
                                 adipisicing elit.
@@ -139,7 +149,8 @@ const SingleStudentPage = async ({ params }: { params: { id: string } }) => {
                             <div className="">
                                 <h1 className="text-xl font-semibold">
                                     {(() => {
-                                        const match = student.class.name.match(/\d+/);
+                                        const match =
+                                            student.class.name.match(/\d+/);
                                         return match ? `${match[0]}th` : "N/A";
                                     })()}
                                     {/* {student.class.name.charAt(0)}th */}

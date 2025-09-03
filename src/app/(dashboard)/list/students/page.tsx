@@ -1,5 +1,5 @@
 import DbError from "@/components/DbError";
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -140,7 +140,7 @@ const StudentListPage = async ({ searchParams }: any) => {
                 </div>
             </td>
             <td className="hidden md:table-cell text-center">
-                {item.username}
+                {item.id}
             </td>
             <td className="hidden md:table-cell text-center">
                 {item.class.name[0]}
@@ -174,7 +174,7 @@ const StudentListPage = async ({ searchParams }: any) => {
                         //         height={16}
                         //     />
                         // </button>
-                        <FormModal table="student" type="delete" id={item.id} />
+                        < FormContainer table="student" type="delete" id={item.id} />
                     )}
                 </div>
             </td>
@@ -222,7 +222,7 @@ const StudentListPage = async ({ searchParams }: any) => {
                             //         height={14}
                             //     />
                             // </button>
-                            <FormModal table="student" type="create" />
+                            <FormContainer table="student" type="create" />
                         )}
                     </div>
                 </div>

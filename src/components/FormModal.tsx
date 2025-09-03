@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteClass, deleteSubject, deleteTeacher } from "@/lib/actions";
+import { deleteClass, deleteStudent, deleteSubject, deleteTeacher } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
@@ -18,8 +18,8 @@ const deleteActionMap = {
     subject: deleteSubject,
     class: deleteClass,
     teacher: deleteTeacher,
+    student: deleteStudent,
     // TODO: OTHER DELETE ACTIONS
-    student: deleteSubject,
     exam: deleteSubject,
     parent: deleteSubject,
     lesson: deleteSubject,
@@ -59,7 +59,14 @@ const forms: {
             relatedData={relatedData}
         />
     ),
-    student: (setOpen, type, data) => <StudentForm type={type} data={data} />,
+    student: (setOpen, type, data, relatedData) => (
+        <StudentForm
+            type={type}
+            data={data}
+            setOpen={setOpen}
+            relatedData={relatedData}
+        />
+    ),
     subject: (setOpen, type, data, relatedData) => (
         <SubjectForm
             type={type}
