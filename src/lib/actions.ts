@@ -8,6 +8,7 @@ import {
     TeacherSchema,
 } from "./formValidationSchemas";
 import { prisma } from "./prisma";
+import { getUserRole } from "./util";
 
 type CurrentState = { success: boolean; error: boolean };
 
@@ -38,6 +39,11 @@ export const createSubject = async (
     currentState: CurrentState,
     data: SubjectSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can create subject...");
+        return { success: false, error: true };
+    }
     try {
         await prisma.subject.create({
             data: {
@@ -62,6 +68,11 @@ export const updateSubject = async (
     currentState: CurrentState,
     data: SubjectSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can update subject...");
+        return { success: false, error: true };
+    }
     try {
         // ensure id is present and is a number
         const id = Number((data as any).id);
@@ -94,6 +105,11 @@ export const deleteSubject = async (
     currentState: CurrentState,
     data: FormData | any
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can delete subject...");
+        return { success: false, error: true };
+    }
     try {
         const id = parseforId(data);
         if (!Number.isFinite(id as number)) {
@@ -119,6 +135,11 @@ export const createClass = async (
     currentState: CurrentState,
     data: ClassSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can create class...");
+        return { success: false, error: true };
+    }
     try {
         await prisma.class.create({
             data,
@@ -136,6 +157,11 @@ export const updateClass = async (
     currentState: CurrentState,
     data: ClassSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can update class...");
+        return { success: false, error: true };
+    }
     try {
         if (typeof data.id !== "number" || !Number.isFinite(data.id)) {
             console.error("updateClass: missing or invalid id", data.id);
@@ -161,6 +187,11 @@ export const deleteClass = async (
     currentState: CurrentState,
     data: FormData
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can delete class...");
+        return { success: false, error: true };
+    }
     const id = data.get("id") as string;
     try {
         await prisma.class.delete({
@@ -181,6 +212,11 @@ export const createTeacher = async (
     currentState: CurrentState,
     data: TeacherSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can create teachers...");
+        return { success: false, error: true };
+    }
     try {
         const client = await clerkClient();
         const user = await client.users.createUser({
@@ -234,6 +270,11 @@ export const updateTeacher = async (
     currentState: CurrentState,
     data: TeacherSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can update teachers...");
+        return { success: false, error: true };
+    }
     if (!data.id) {
         return { success: false, error: true };
     }
@@ -281,6 +322,11 @@ export const deleteTeacher = async (
     currentState: CurrentState,
     data: FormData
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can delete teachers...");
+        return { success: false, error: true };
+    }
     const id = data.get("id") as string;
     try {
         const client = await clerkClient();
@@ -304,6 +350,11 @@ export const createStudent = async (
     currentState: CurrentState,
     data: StudentSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can create students...");
+        return { success: false, error: true };
+    }
     // console.log(data);
     try {
         const classItem = await prisma.class.findUnique({
@@ -355,6 +406,11 @@ export const updateStudent = async (
     currentState: CurrentState,
     data: StudentSchema
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can update student...");
+        return { success: false, error: true };
+    }
     if (!data.id) {
         return { success: false, error: true };
     }
@@ -400,6 +456,11 @@ export const deleteStudent = async (
     currentState: CurrentState,
     data: FormData
 ) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can delete student...");
+        return { success: false, error: true };
+    }
     const id = data.get("id") as string;
     try {
         const client = await clerkClient();
