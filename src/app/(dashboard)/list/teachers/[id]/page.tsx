@@ -10,14 +10,12 @@ import { notFound } from "next/navigation";
 import { getUserRole } from "@/lib/util";
 import FormContainer from "@/components/FormContainer";
 
-const SingleTeacherPage = async ({
-    params,
-}: {
-    params: { id: string };
-}) => {
+const SingleTeacherPage = async ({ params }: { params: any }) => {
     const role = await getUserRole();
 
-    const { id } = await params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams as { id: string };
+
     const teacher:
         | (Teacher & {
               _count: { subjects: number; lessons: number; classes: number };

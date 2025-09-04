@@ -13,7 +13,7 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 import InputField from "../InputField";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 
 const ClassForm = ({
     setOpen,
@@ -31,7 +31,7 @@ const ClassForm = ({
         handleSubmit,
         formState: { errors },
     } = useForm<ClassSchema>({
-        resolver: zodResolver(classSchema),
+        resolver: zodResolver(classSchema) as Resolver<ClassSchema>,
     });
 
     const [state, formAction] = useActionState(

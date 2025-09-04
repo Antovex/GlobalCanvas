@@ -11,10 +11,11 @@ import { Suspense } from "react";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import FormContainer from "@/components/FormContainer";
 
-const SingleStudentPage = async ({ params }: { params: { id: string } }) => {
+const SingleStudentPage = async ({ params }: { params: any }) => {
     const role = await getUserRole();
 
-    const { id } = await params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams as { id: string };
 
     const student:
         | (Student & {

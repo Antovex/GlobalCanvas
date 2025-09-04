@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import InputField from "../InputField";
 import {
     Dispatch,
@@ -34,7 +34,7 @@ const TeacherForm = ({
         handleSubmit,
         formState: { errors },
     } = useForm<TeacherSchema>({
-        resolver: zodResolver(teacherSchema),
+        resolver: zodResolver(teacherSchema)as Resolver<TeacherSchema>,
     });
 
     const [img, setImg] = useState<any>(type === "update" ? { secure_url: data?.img } : undefined);
@@ -198,7 +198,7 @@ const TeacherForm = ({
                         maxFiles: 1,
                         sources: ["local", "url", "camera"],
                     }}
-                    onUploadReady={() => setUploadState("uploading")}
+                    // onUploadReady={() => setUploadState("uploading")}
                     onSuccess={(result, { widget }) => {
                         setImg(result.info);
                         setUploadState("uploaded");
@@ -212,7 +212,8 @@ const TeacherForm = ({
                                 <div
                                     className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
                                     onClick={() => {
-                                        setUploadState("idle");
+                                        // mark as starting (user opened uploader)
+                                        setUploadState("uploading");
                                         open();
                                     }}
                                 >
