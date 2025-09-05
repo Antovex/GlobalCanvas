@@ -83,3 +83,43 @@ export const studentSchema = z.object({
 });
 
 export type StudentSchema = z.infer<typeof studentSchema>;
+
+export const lessonSchema = z.object({
+    id: z.number().optional(),
+    name: z.string().min(1, { message: "Lesson name is required!" }),
+
+    // Preferred (uncomment import above):
+    // day: z.nativeEnum(Day, { required_error: "Day is required" }),
+
+    // Fallback: replace values with your enum values if different
+    day: z.enum(
+        [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY",
+        ] as const,
+        { message: "Day is required" }
+    ),
+
+    // Accepts ISO strings or Date objects (coerces to Date)
+    startTime: z.coerce.date({ message: "Start time is required" }),
+    endTime: z.coerce.date({ message: "End time is required" }),
+
+    subjectId: z.coerce
+        .number()
+        .int()
+        .min(1, { message: "Subject is required!" }),
+    classId: z.coerce.number().int().min(1, { message: "Class is required!" }),
+    teacherId: z.string().min(1, { message: "Teacher is required!" }),
+
+    // optional relational arrays if needed
+    // exams: z.array(z.number()).optional(),
+    // assignments: z.array(z.number()).optional(),
+    // attendances: z.array(z.number()).optional(),
+});
+
+export type LessonSchema = z.infer<typeof lessonSchema>;

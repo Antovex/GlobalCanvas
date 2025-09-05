@@ -1,5 +1,5 @@
 import DbError from "@/components/DbError";
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -149,12 +149,12 @@ const LessonListPage = async ({ searchParams }: any) => {
                     {/* EDIT or DELETE A LESSON */}
                     {role === "admin" && (
                         <>
-                            <FormModal
+                            <FormContainer
                                 table="lesson"
                                 type="update"
                                 data={item}
                             />
-                            <FormModal
+                            <FormContainer
                                 table="lesson"
                                 type="delete"
                                 id={item.id}
@@ -199,7 +199,7 @@ const LessonListPage = async ({ searchParams }: any) => {
                         </button>
                         {/* Add new subject button */}
                         {role === "admin" && (
-                            <FormModal table="lesson" type="create" />
+                            <FormContainer table="lesson" type="create" />
                         )}
                     </div>
                 </div>

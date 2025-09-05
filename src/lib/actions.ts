@@ -6,6 +6,7 @@ import {
     StudentSchema,
     SubjectSchema,
     TeacherSchema,
+    LessonSchema,
 } from "./formValidationSchemas";
 import { prisma } from "./prisma";
 import { getUserRole } from "./util";
@@ -476,6 +477,100 @@ export const deleteStudent = async (
         return { success: true, error: false };
     } catch (err) {
         console.log(err);
+        return { success: false, error: true };
+    }
+};
+
+export const createLesson = async (
+    currentState: CurrentState,
+    data: LessonSchema
+) => {
+    const role = await getUserRole();
+    if (role !== "admin" && role !== "teacher") {
+        console.log("Only admins or teachers can create lessons...");
+        return { success: false, error: true };
+    }
+    try {
+        await prisma.lesson.create({
+            data: {
+                name: data.name,
+                day: data.day,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                subjectId: data.subjectId,
+                classId: data.classId,
+                teacherId: data.teacherId,
+            },
+        });
+
+        // revalidatePath("/list/lessons");
+        return { success: true, error: false };
+    } catch (err) {
+        console.log("createLesson error:", err);
+        return { success: false, error: true };
+    }
+};
+
+export const updateLesson = async (
+    currentState: CurrentState,
+    data: LessonSchema
+) => {
+    const role = await getUserRole();
+    if (role !== "admin" && role !== "teacher") {
+        console.log("Only admins or teachers can update lessons...");
+        return { success: false, error: true };
+    }
+    if (typeof (data as any).id !== "number" || !Number.isFinite((data as any).id)) {
+        console.error("updateLesson: missing or invalid id", (data as any).id);
+        return { success: false, error: true };
+    }
+    try {
+        const id = (data as any).id as number;
+        await prisma.lesson.update({
+            where: { id },
+            data: {
+                name: data.name,
+                day: data.day,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                subjectId: data.subjectId,
+                classId: data.classId,
+                teacherId: data.teacherId,
+            },
+        });
+
+        // revalidatePath("/list/lessons");
+        return { success: true, error: false };
+    } catch (err) {
+        console.log("updateLesson error:", err);
+        return { success: false, error: true };
+    }
+};
+
+export const deleteLesson = async (
+    currentState: CurrentState,
+    data: FormData | any
+) => {
+    const role = await getUserRole();
+    if (role !== "admin" && role !== "teacher") {
+        console.log("Only admins or teachers can delete lessons...");
+        return { success: false, error: true };
+    }
+    try {
+        const id = parseforId(data);
+        if (!Number.isFinite(id as number)) {
+            console.error("deleteLesson: missing or invalid id", id);
+            return { success: false, error: true };
+        }
+
+        await prisma.lesson.delete({
+            where: { id: id as number },
+        });
+
+        // revalidatePath("/list/lessons");
+        return { success: true, error: false };
+    } catch (err) {
+        console.log("deleteLesson error:", err);
         return { success: false, error: true };
     }
 };
