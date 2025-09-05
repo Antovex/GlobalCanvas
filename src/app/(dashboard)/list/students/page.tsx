@@ -89,8 +89,8 @@ const StudentListPage = async ({ searchParams }: any) => {
             className: "hidden md:table-cell text-center",
         },
         {
-            header: "Grade",
-            accessor: "grade",
+            header: "Class",
+            accessor: "class",
             className: "hidden md:table-cell text-center",
         },
         {
@@ -143,7 +143,7 @@ const StudentListPage = async ({ searchParams }: any) => {
                 {item.id}
             </td>
             <td className="hidden md:table-cell text-center">
-                {item.class.name[0]}
+                {item.class.name} {/* [0] */}
             </td>
             <td className="hidden md:table-cell text-center">{item.phone}</td>
             <td className="hidden md:table-cell text-center">{item.address}</td>

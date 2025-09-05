@@ -149,15 +149,15 @@ const SingleStudentPage = async ({ params }: { params: any }) => {
                             />
                             <div className="">
                                 <h1 className="text-xl font-semibold">
-                                    {(() => {
+                                    {/* {(() => {
                                         const match =
                                             student.class.name.match(/\d+/);
                                         return match ? `${match[0]}th` : "N/A";
-                                    })()}
-                                    {/* {student.class.name.charAt(0)}th */}
+                                    })()} */}
+                                    {student.class.name}
                                 </h1>
                                 <span className="text-sm text-gray-400">
-                                    Grade
+                                    Class
                                 </span>
                             </div>
                         </div>

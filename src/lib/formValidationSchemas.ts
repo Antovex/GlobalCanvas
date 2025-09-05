@@ -15,10 +15,10 @@ export const classSchema = z.object({
         if (v === "" || v == null) return undefined;
         return Number(v);
     }, z.number().min(1, { message: "Capacity is required!" })),
-    gradeId: z.preprocess((v) => {
-        if (v === "" || v == null) return undefined;
-        return Number(v);
-    }, z.number().min(1, { message: "Grade is required!" })),
+    // gradeId: z.preprocess((v) => {
+    //     if (v === "" || v == null) return undefined;
+    //     return Number(v);
+    // }, z.number().min(1, { message: "Grade is required!" })),
     supervisorId: z.string().optional(),
 });
 
@@ -77,7 +77,7 @@ export const studentSchema = z.object({
     bloodType: z.string().min(1, { message: "Blood Type is required!" }),
     birthday: z.coerce.date({ message: "Birthday is required!" }),
     sex: z.enum(["MALE", "FEMALE"], { message: "Sex is required!" }),
-    gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
+    // gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
     classId: z.coerce.number().min(1, { message: "Class is required!" }),
     parentId: z.string().min(1, { message: "Parent Id is required!" }),
 });

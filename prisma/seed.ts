@@ -17,20 +17,20 @@ async function main() {
     });
 
     // GRADE
-    for (let i = 1; i <= 6; i++) {
-        await prisma.grade.create({
-            data: {
-                level: i,
-            },
-        });
-    }
+    // for (let i = 1; i <= 6; i++) {
+    //     await prisma.grade.create({
+    //         data: {
+    //             level: i,
+    //         },
+    //     });
+    // }
 
     // CLASS
     for (let i = 1; i <= 6; i++) {
         await prisma.class.create({
             data: {
                 name: `${i}A`,
-                gradeId: i,
+                // gradeId: i,
                 capacity: Math.floor(Math.random() * (20 - 15 + 1)) + 15,
             },
         });
@@ -128,7 +128,7 @@ async function main() {
                 bloodType: "O-",
                 sex: i % 2 === 0 ? UserSex.MALE : UserSex.FEMALE,
                 parentId: `parentId${Math.ceil(i / 2) % 25 || 25}`,
-                gradeId: (i % 6) + 1,
+                // gradeId: (i % 6) + 1,
                 classId: (i % 6) + 1,
                 birthday: new Date(
                     new Date().setFullYear(new Date().getFullYear() - 10)

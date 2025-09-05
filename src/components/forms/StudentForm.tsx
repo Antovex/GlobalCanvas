@@ -73,7 +73,7 @@ const StudentForm = ({
         }
     }, [state, router, type, setOpen]);
 
-    const { grades, classes } = relatedData;
+    const { classes } = relatedData; // grades,
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -179,7 +179,7 @@ const StudentForm = ({
                         </p>
                     )}
                 </div>
-                <div className="flex flex-col gap-2 w-full md:w-1/4">
+                {/* <div className="flex flex-col gap-2 w-full md:w-1/4">
                     <label className="text-xs text-gray-500">Grade</label>
                     <select
                         className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
@@ -197,7 +197,7 @@ const StudentForm = ({
                             {errors.gradeId.message.toString()}
                         </p>
                     )}
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-2 w-full md:w-1/4">
                     <label className="text-xs text-gray-500">Class</label>
                     <select

@@ -109,8 +109,8 @@ const AttendancePage = async ({ searchParams }: any) => {
             className: "hidden md:table-cell text-center",
         },
         {
-            header: "Grade",
-            accessor: "grade",
+            header: "Class",
+            accessor: "class",
             className: "hidden md:table-cell text-center",
         },
         ...(role === "admin" || role === "teacher"
@@ -153,7 +153,7 @@ const AttendancePage = async ({ searchParams }: any) => {
                 {item.username}
             </td>
             <td className="hidden md:table-cell text-center">
-                {item.class.name[0]}
+                {item.class.name}
             </td>
             <td>
                 <div className="flex items-center justify-center gap-2 px-4">

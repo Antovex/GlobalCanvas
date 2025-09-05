@@ -82,11 +82,11 @@ const ClassListPage = async ({ searchParams }: any) => {
             accessor: "capacity",
             className: "hidden md:table-cell text-center",
         },
-        {
-            header: "Grade",
-            accessor: "grade",
-            className: "hidden md:table-cell text-center",
-        },
+        // {
+        //     header: "Grade",
+        //     accessor: "grade",
+        //     className: "hidden md:table-cell text-center",
+        // },
         {
             header: "Supervisor",
             accessor: "supervisor",
@@ -119,7 +119,7 @@ const ClassListPage = async ({ searchParams }: any) => {
             <td className="hidden md:table-cell text-center">
                 {item.capacity}
             </td>
-            <td className="hidden md:table-cell text-center">{item.name[0]}</td>
+            {/* <td className="hidden md:table-cell text-center">{item.name[0]}</td> */}
             <td className="hidden md:table-cell text-center">
                 {item.supervisor.name + " " + item.supervisor.surname}
             </td>
