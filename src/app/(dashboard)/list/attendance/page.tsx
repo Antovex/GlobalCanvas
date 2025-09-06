@@ -9,8 +9,12 @@ import { Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import AttendanceToggle from "@/components/AttendanceToggle";
 import AttendanceDatePicker from "@/components/AttendanceDatePicker";
+import LessonSelector from "@/components/LessonSelector";
+import ClassFilter from "@/components/ClassFilter";
 
-type StudentList = Student & { class: { name: string } };
+type StudentList = Student & { 
+    class: { name: string };
+};
 
 const AttendancePage = async ({ searchParams }: any) => {
     const role = await getUserRole();
@@ -21,9 +25,10 @@ const AttendancePage = async ({ searchParams }: any) => {
     for (const [k, v] of Object.entries(rawSearchParams || {})) {
         normalized[k] = Array.isArray(v) ? v[0] : (v as string | undefined);
     }
-    const { page, ...queryParams } = normalized;
+    const { page, lessonId, classFilter, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
+    const selectedLessonId = lessonId ? parseInt(lessonId) : null;
 
     // Date for date picker from URL params
     const selectedDateRaw = normalized.date; // format expected: YYYY-MM-DD or ISO
@@ -37,7 +42,10 @@ const AttendancePage = async ({ searchParams }: any) => {
             if (value !== undefined) {
                 switch (key) {
                     case "search":
-                        query.name = { contains: value, mode: "insensitive" };
+                        query.OR = [
+                            { name: { contains: value, mode: "insensitive" } },
+                            { surname: { contains: value, mode: "insensitive" } }
+                        ];
                         break;
                     default:
                         break;
@@ -46,23 +54,59 @@ const AttendancePage = async ({ searchParams }: any) => {
         }
     }
 
-    let data = [];
+    // Add class filter if specified
+    if (classFilter) {
+        query.classId = parseInt(classFilter);
+    }
+
+    let data: StudentList[] = [];
     let count = 0;
+    let lessons: any[] = [];
+    let classes: any[] = [];
     let dbError = null;
+    
     try {
-        [data, count] = await prisma.$transaction([
+        // Fetch lessons for the lesson selector
+        lessons = await prisma.lesson.findMany({
+            include: {
+                subject: { select: { name: true } },
+                class: { select: { name: true } },
+            },
+            orderBy: [
+                { class: { name: "asc" } },
+                { subject: { name: "asc" } },
+                { name: "asc" }
+            ],
+        });
+
+        // Fetch all classes for filtering
+        classes = await prisma.class.findMany({
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+        });
+
+        // Fetch all students
+        const [students, studentCount] = await prisma.$transaction([
             prisma.student.findMany({
                 where: query,
                 include: {
-                    class: { select: {name: true} },
+                    class: { select: { name: true } },
                 },
                 take: ITEM_PER_PAGE,
                 skip: ITEM_PER_PAGE * (p - 1),
+                orderBy: [
+                    { class: { name: "asc" } },
+                    { name: "asc" },
+                    { surname: "asc" }
+                ],
             }),
             prisma.student.count({
                 where: query,
             }),
         ]);
+
+        data = students;
+        count = studentCount;
     } catch (error: any) {
         dbError = error.message || "Unable to connect to the database.";
         return (
@@ -73,19 +117,19 @@ const AttendancePage = async ({ searchParams }: any) => {
     }
 
     // --- load existing attendance for this lesson + day so we can show initial state ---
-    const LESSON_ID = 1; // TODO: replace with selected lesson id (or pass from UI)
     const parsedDateForQuery = selectedDate ? new Date(selectedDate) : new Date();
     const dayStart = new Date(parsedDateForQuery);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(dayStart);
     dayEnd.setDate(dayEnd.getDate() + 1);
 
-    const studentIds = (data as StudentList[]).map((s) => s.id);
+    const studentIds = data.map((s) => s.id);
     const attendanceByStudent: Record<string, any> = {};
-    if (studentIds.length > 0) {
+    
+    if (studentIds.length > 0 && selectedLessonId) {
         const attendances = await prisma.attendance.findMany({
             where: {
-                lessonId: LESSON_ID,
+                lessonId: selectedLessonId,
                 studentId: { in: studentIds },
                 date: { gte: dayStart, lt: dayEnd },
             },
@@ -144,7 +188,7 @@ const AttendancePage = async ({ searchParams }: any) => {
                     className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
                 />
                 <div className="flex flex-col items-center justify-center">
-                    <h3 className="font-semibold">{item.name}</h3>
+                    <h3 className="font-semibold">{item.name} {item.surname}</h3>
                     <p className="text-xs text-gray-500">{item.class.name}</p>
                 </div>
             </td>
@@ -156,22 +200,23 @@ const AttendancePage = async ({ searchParams }: any) => {
             </td>
             <td>
                 <div className="flex items-center justify-center gap-2 px-4">
-                    {(role === "admin" || role === "teacher") && (
+                    {(role === "admin" || role === "teacher") && selectedLessonId && (
                         // map current DB record to the toggle's initial value
                         (() => {
                             const att = attendanceByStudent[item.id];
                             const initial = att ? att.status : null;
                             return (
                                 <AttendanceToggle
-                                    // force remount when selectedDate changes
-                                    // key={`${item.id}-${selectedDate ?? "today"}`}
                                     studentId={item.id}
-                                    lessonId={LESSON_ID}
+                                    lessonId={selectedLessonId}
                                     date={selectedDate}
                                     initial={initial}
                                 />
                             );
                         })()
+                    )}
+                    {(role === "admin" || role === "teacher") && !selectedLessonId && (
+                        <span className="text-sm text-gray-500">Select a lesson</span>
                     )}
                 </div>
             </td>
@@ -183,36 +228,50 @@ const AttendancePage = async ({ searchParams }: any) => {
             {/* TOP BAR */}
             <div className="flex items-center justify-between">
                 <h1 className="hidden md:block text-lg font-semibold">
-                    All Students
+                    Take Attendance
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    <AttendanceDatePicker initialDate={selectedDateRaw} />
-                    <TableSearch placeholder="Search with Student Name..." />
-                    {/* Filter Button */}
-                    <div className="flex items-center gap-4 self-end">
-                        <button
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow"
-                            aria-label="Filter students"
-                        >
-                            <Image
-                                src="/filter.png"
-                                alt=""
-                                width={14}
-                                height={14}
-                            />
-                        </button>
-                        {/* Sort Button */}
-                        <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                            <Image
-                                src="/sort.png"
-                                alt=""
-                                width={14}
-                                height={14}
-                            />
-                        </button>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <AttendanceDatePicker initialDate={selectedDateRaw} />
+                        <LessonSelector 
+                            lessons={lessons} 
+                            currentLessonId={lessonId}
+                        />
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        {/* Class Filter */}
+                        <ClassFilter 
+                            classes={classes} 
+                            currentClassId={classFilter}
+                        />
+                        <TableSearch placeholder="Search with Student Name..." />
                     </div>
                 </div>
             </div>
+
+            {/* Lesson Selection Info */}
+            {selectedLessonId && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="text-sm font-medium text-blue-800">
+                            Taking attendance for:
+                        </span>
+                        <span className="text-sm text-blue-700">
+                            {lessons.find(l => l.id === selectedLessonId)?.subject.name} - {" "}
+                            {lessons.find(l => l.id === selectedLessonId)?.name} {" "}
+                            ({lessons.find(l => l.id === selectedLessonId)?.class.name})
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {!selectedLessonId && (role === "admin" || role === "teacher") && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                        Please select a lesson and date to start taking attendance.
+                    </p>
+                </div>
+            )}
 
             {/* LIST */}
             <Table columns={columns} renderRow={renderRow} data={data} />
