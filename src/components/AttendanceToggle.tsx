@@ -68,9 +68,9 @@ export default function AttendanceToggle({ studentId, lessonId = null, initial =
         const isSelected = status === s;
         const isSubmittingThis = submittingStatus === s;
         const selectedBg =
-            s === "PRESENT" ? "#cfceff" : s === "ABSENT" ? "#fae27c" : "#e53d30";
+            s === "PRESENT" ? "#cfceff" : s === "ABSENT" ? "#e53d30" : "#fae27c";
         const textColor = isSelected
-            ? s === "COMPENSATION"
+            ? s === "ABSENT"
                 ? "#ffffff"
                 : "#111827"
             : undefined;

@@ -59,7 +59,8 @@ const AttendanceChartContainer = async () => {
     // For chart, we can combine present + compensation as "effective attendance"
     const data = daysOfWeek.map((day) => ({
         name: day,
-        present: attendanceMap[day].present + attendanceMap[day].compensation, // Effective attendance
+        present: attendanceMap[day].present,
+        compensation: attendanceMap[day].compensation,
         absent: attendanceMap[day].absent,
     }));
 
