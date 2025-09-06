@@ -12,7 +12,6 @@ const AttendanceChartContainer = async () => {
     nextSunday.setDate(lastMonday.getDate() + 7);
 
     const resData = await prisma.attendance.findMany({
-        
         where: {
             date: {
                 gte: lastMonday,
@@ -21,57 +20,48 @@ const AttendanceChartContainer = async () => {
         },
         select: {
             date: true,
-            present: true,
+            status: true,
         },
     });
 
-    // console.log(resData);
     const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     const attendanceMap: {
-        [key: string]: { present: number; absent: number };
+        [key: string]: { present: number; absent: number; compensation: number };
     } = {
-        Mon: { present: 0, absent: 0 },
-        Tue: { present: 0, absent: 0 },
-        Wed: { present: 0, absent: 0 },
-        Thu: { present: 0, absent: 0 },
-        Fri: { present: 0, absent: 0 },
-        Sat: { present: 0, absent: 0 },
-        Sun: { present: 0, absent: 0 },
+        Mon: { present: 0, absent: 0, compensation: 0 },
+        Tue: { present: 0, absent: 0, compensation: 0 },
+        Wed: { present: 0, absent: 0, compensation: 0 },
+        Thu: { present: 0, absent: 0, compensation: 0 },
+        Fri: { present: 0, absent: 0, compensation: 0 },
+        Sat: { present: 0, absent: 0, compensation: 0 },
+        Sun: { present: 0, absent: 0, compensation: 0 },
     };
 
     resData.forEach((item) => {
         const itemDate = new Date(item.date);
         const dayOfWeek = itemDate.getDay();
-
-        // if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        //     const dayName = daysOfWeek[dayOfWeek - 1];
-
-        //     if (item.present) {
-        //         attendanceMap[dayName].present += 1;
-        //     } else {
-        //         attendanceMap[dayName].absent += 1;
-        //     }
-        // }
-
         const dayName = daysOfWeek[dayOfWeek === 0 ? 6 : dayOfWeek - 1]; // Map 0 to 'Sun', 6 to 'Sat'
 
-        if (item.present) {
-            attendanceMap[dayName].present += 1;
-        } else {
-            attendanceMap[dayName].absent += 1;
+        switch (item.status) {
+            case "PRESENT":
+                attendanceMap[dayName].present += 1;
+                break;
+            case "ABSENT":
+                attendanceMap[dayName].absent += 1;
+                break;
+            case "COMPENSATION":
+                attendanceMap[dayName].compensation += 1;
+                break;
         }
     });
 
-    // console.log(resData.map((item) => new Date(item.date).toDateString()));
-
+    // For chart, we can combine present + compensation as "effective attendance"
     const data = daysOfWeek.map((day) => ({
         name: day,
-        present: attendanceMap[day].present,
+        present: attendanceMap[day].present + attendanceMap[day].compensation, // Effective attendance
         absent: attendanceMap[day].absent,
     }));
-
-    // console.log(data);
 
     return (
         <div className="bg-white rounded-lg p-4 h-full">
@@ -83,7 +73,6 @@ const AttendanceChartContainer = async () => {
                     alt=""
                     width={20}
                     height={20}
-                    // className="cursor-pointer"
                 />
             </div>
 

@@ -29,7 +29,6 @@ const AttendancePage = async ({ searchParams }: any) => {
     const selectedDateRaw = normalized.date; // format expected: YYYY-MM-DD or ISO
     const selectedDate = selectedDateRaw ? new Date(selectedDateRaw).toISOString() : undefined;
 
-
     // URL PARAMS CONDITIONS
     const query: Prisma.StudentWhereInput = {};
 
@@ -161,7 +160,7 @@ const AttendancePage = async ({ searchParams }: any) => {
                         // map current DB record to the toggle's initial value
                         (() => {
                             const att = attendanceByStudent[item.id];
-                            const initial = att ? (att.present ? "PRESENT" : "ABSENT") : null;
+                            const initial = att ? att.status : null;
                             return (
                                 <AttendanceToggle
                                     // force remount when selectedDate changes
@@ -211,18 +210,6 @@ const AttendancePage = async ({ searchParams }: any) => {
                                 height={14}
                             />
                         </button>
-                        {/* Add new student button */}
-                        {/* {role === "admin" && (
-                            // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                            //     <Image
-                            //         src="/plus.png"
-                            //         alt=""
-                            //         width={14}
-                            //         height={14}
-                            //     />
-                            // </button>
-                            <FormModal table="student" type="create" />
-                        )} */}
                     </div>
                 </div>
             </div>

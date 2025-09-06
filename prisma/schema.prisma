@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // output   = "../src/generated/prisma"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
@@ -150,9 +150,9 @@ model Result {
 }
 
 model Attendance {
-  id      Int      @id @default(autoincrement())
-  date    DateTime
-  present Boolean
+  id     Int              @id @default(autoincrement())
+  date   DateTime
+  status AttendanceStatus @default(ABSENT)
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id])
@@ -181,12 +181,6 @@ model Announcement {
   class   Class? @relation(fields: [classId], references: [id])
 }
 
-// enum AttendanceStatus {
-//   PRESENT
-//   ABSENT
-//   COMPENSATION
-// }
-
 enum UserSex {
   MALE
   FEMALE
@@ -200,4 +194,10 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  COMPENSATION
 }

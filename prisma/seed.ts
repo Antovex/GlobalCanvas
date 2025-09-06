@@ -1,33 +1,16 @@
-// import { Day, PrismaClient, UserSex } from "@prisma/client";
-// const prisma = new PrismaClient();
-
-// async function main() {
-//     // ADMIN
-//     await prisma.admin.create({
-//         data: {
-//             id: "admin1",
-//             username: "admin1",
-//         },
-//     });
-//     await prisma.admin.create({
-//         data: {
-//             id: "admin2",
-//             username: "admin2",
-//         },
-//     });
-
-//     // GRADE
-//     // for (let i = 1; i <= 6; i++) {
-//     //     await prisma.grade.create({
-//     //         data: {
-//     //             level: i,
-//     //         },
-import { PrismaClient } from "@prisma/client";
+import { AttendanceStatus, Day, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 function randomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomAttendanceStatus(): AttendanceStatus {
+	const rand = Math.random();
+	if (rand < 0.8) return "PRESENT";      // 80% present
+	if (rand < 0.95) return "ABSENT";      // 15% absent
+	return "COMPENSATION";                 // 5% compensation
 }
 
 async function main() {
@@ -84,7 +67,7 @@ async function main() {
 				address: `Address ${i}`,
 				img: null,
 				bloodType: "O+",
-				sex: "MALE",
+				sex: i % 2 === 0 ? "FEMALE" : "MALE",
 				birthday: new Date(1985, 0, i),
 				subjects: {
 					connect: [{ id: subjects[(i - 1) % subjects.length].id }],
@@ -164,7 +147,7 @@ async function main() {
 		const subject = subjects[(i - 1) % subjects.length];
 		const classRef = classes[(i - 1) % classes.length];
 		const teacherId = teacherIds[(i - 1) % teacherIds.length];
-		const dayOptions = [
+		const dayOptions: Day[] = [
 			"MONDAY",
 			"TUESDAY",
 			"WEDNESDAY",
@@ -173,7 +156,7 @@ async function main() {
 			"SATURDAY",
 			"SUNDAY",
 		];
-		const day = dayOptions[(i - 1) % dayOptions.length] as any;
+		const day = dayOptions[(i - 1) % dayOptions.length];
 		const start = new Date();
 		start.setHours(8 + ((i - 1) % 8), 0, 0, 0);
 		const end = new Date(start);
@@ -234,22 +217,30 @@ async function main() {
 		}
 	}
 
-	// Attendance for the first week for first 12 students
+	// Attendance - Generate realistic attendance data for past 2 weeks
 	const today = new Date();
-	const dayOfWeek = today.getDay();
-	const monday = new Date(today);
-	monday.setDate(today.getDate() - dayOfWeek + 1);
+	const startDate = new Date(today);
+	startDate.setDate(today.getDate() - 14); // Start 2 weeks ago
 
-	for (let d = 0; d < 5; d++) {
-		const date = new Date(monday);
-		date.setDate(monday.getDate() + d);
-		for (let s = 0; s < 12; s++) {
-			const studentRef = studentIds[s];
+	for (let d = 0; d < 14; d++) {
+		const date = new Date(startDate);
+		date.setDate(startDate.getDate() + d);
+		
+		// Skip weekends for attendance
+		if (date.getDay() === 0 || date.getDay() === 6) continue;
+		
+		// Create attendance for random selection of students
+		const attendanceCount = randomInt(18, 30); // Random number of students attend each day
+		const shuffledStudents = [...studentIds].sort(() => Math.random() - 0.5);
+		
+		for (let s = 0; s < attendanceCount; s++) {
+			const studentRef = shuffledStudents[s];
 			const lessonRef = lessons[s % lessons.length];
+			
 			await prisma.attendance.create({
 				data: {
 					date,
-					present: Math.random() > 0.1,
+					status: getRandomAttendanceStatus(),
 					studentId: studentRef,
 					lessonId: lessonRef.id,
 				},
@@ -293,147 +284,3 @@ main()
 	.finally(async () => {
 		await prisma.$disconnect();
 	});
-//     // EXAM
-//     for (let i = 1; i <= 10; i++) {
-//         await prisma.exam.create({
-//             data: {
-//                 title: `Exam ${i}`,
-//                 startTime: new Date(
-//                     new Date().setHours(new Date().getHours() + 1)
-//                 ),
-//                 endTime: new Date(
-//                     new Date().setHours(new Date().getHours() + 2)
-//                 ),
-//                 lessonId: (i % 30) + 1,
-//             },
-//         });
-//     }
-
-//     // ASSIGNMENT
-//     for (let i = 1; i <= 10; i++) {
-//         await prisma.assignment.create({
-//             data: {
-//                 title: `Assignment ${i}`,
-//                 startDate: new Date(
-//                     new Date().setHours(new Date().getHours() + 1)
-//                 ),
-//                 dueDate: new Date(new Date().setDate(new Date().getDate() + 1)),
-//                 lessonId: (i % 30) + 1,
-//             },
-//         });
-//     }
-
-//     // RESULT
-//     for (let i = 1; i <= 10; i++) {
-//         await prisma.result.create({
-//             data: {
-//                 score: 90,
-//                 studentId: `student${i}`,
-//                 ...(i <= 5 ? { examId: i } : { assignmentId: i - 5 }),
-//             },
-//         });
-//     }
-
-//     // ATTENDANCE
-//     // for (let i = 1; i <= 10; i++) {
-//     //     await prisma.attendance.create({
-//     //         data: {
-//     //             date: new Date(),
-//     //             present: true,
-//     //             studentId: `student${i}`,
-//     //             lessonId: (i % 30) + 1,
-//     //         },
-//     //     });
-//     // }
-
-//     // const today = new Date();
-//     // const previousMonday = new Date(today);
-//     // previousMonday.setDate(today.getDate() - today.getDay() - 6); // Get previous week's Monday
-
-//     // for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
-//     //     // Monday to Friday
-//     //     const attendanceDate = new Date(previousMonday);
-//     //     attendanceDate.setDate(previousMonday.getDate() + dayOffset);
-
-//     //     for (let i = 1; i <= 10; i++) {
-//     //         await prisma.attendance.create({
-//     //             data: {
-//     //                 date: attendanceDate,
-//     //                 present: true,
-//     //                 studentId: `student${i}`,
-//     //                 lessonId: (i % 30) + 1,
-//     //             },
-//     //         });
-//     //     }
-//     // }
-
-//     const today = new Date();
-//     const previousMonday = new Date(today);
-//     previousMonday.setDate(today.getDate() - today.getDay() - 6); // Get previous week's Monday
-
-//     for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-//         // Monday to Sunday
-//         const attendanceDate = new Date(previousMonday);
-//         attendanceDate.setDate(previousMonday.getDate() + dayOffset);
-
-//         // Random number of presents for the day (between 1 and 10)
-//         const presentsCount = Math.floor(Math.random() * 10) + 1;
-
-//         // Shuffle student IDs to pick random students
-//         const studentIds = Array.from(
-//             { length: 10 },
-//             (_, i) => `student${i + 1}`
-//         );
-//         for (let i = 0; i < presentsCount; i++) {
-//             await prisma.attendance.create({
-//                 data: {
-//                     date: attendanceDate,
-//                     present: true,
-//                     studentId: studentIds[i],
-//                     lessonId: ((i + dayOffset) % 30) + 1,
-//                 },
-//             });
-//         }
-//     }
-
-//     // EVENT
-//     for (let i = 1; i <= 5; i++) {
-//         await prisma.event.create({
-//             data: {
-//                 title: `Event ${i}`,
-//                 description: `Description for Event ${i}`,
-//                 startTime: new Date(
-//                     new Date().setHours(new Date().getHours() + 1)
-//                 ),
-//                 endTime: new Date(
-//                     new Date().setHours(new Date().getHours() + 2)
-//                 ),
-//                 classId: (i % 5) + 1,
-//             },
-//         });
-//     }
-
-//     // ANNOUNCEMENT
-//     for (let i = 1; i <= 5; i++) {
-//         await prisma.announcement.create({
-//             data: {
-//                 title: `Announcement ${i}`,
-//                 description: `Description for Announcement ${i}`,
-//                 date: new Date(),
-//                 classId: (i % 5) + 1,
-//             },
-//         });
-//     }
-
-//     console.log("Seeding completed successfully.");
-// }
-
-// main()
-//     .then(async () => {
-//         await prisma.$disconnect();
-//     })
-//     .catch(async (e) => {
-//         console.error(e);
-//         await prisma.$disconnect();
-//         process.exit(1);
-//     });

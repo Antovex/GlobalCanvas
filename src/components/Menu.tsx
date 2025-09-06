@@ -1,6 +1,5 @@
 "use client";
 
-import { getUserRole } from "@/lib/util";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -86,6 +85,12 @@ const menuItems = [
                 label: "My Attendance",
                 href: "/list/myattendance",
                 visible: ["teacher", "student"],
+            },
+            {
+                icon: "/attendance.png",
+                label: "Student Attendance",
+                href: "/list/myattendance",
+                visible: ["admin", "teacher"],
             },
             {
                 icon: "/calendar.png",

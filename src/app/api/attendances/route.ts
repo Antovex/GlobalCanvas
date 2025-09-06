@@ -23,7 +23,6 @@ export async function POST(req: Request) {
 
         // validate required fields (lessonId is required per your schema)
         if (!body?.studentId || !body?.lessonId || body?.status == null) {
-            //body?.lessonId == null
             return NextResponse.json(
                 {
                     error: "missing fields: studentId, lessonId and status are required",
@@ -31,14 +30,6 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
-
-        // guard against string "null" coming from forms/clients
-        // if (
-        //     typeof body.lessonId === "string" &&
-        //     body.lessonId.toLowerCase() === "null"
-        // ) {
-        //     return NextResponse.json({ error: "lessonId is required" }, { status: 400 });
-        // }
 
         // normalize and validate lessonId (Prisma expects a number for integer FK)
         const lessonId = Number(body.lessonId);
@@ -61,10 +52,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // map status -> present boolean for current schema
-        // (When you migrate to AttendanceStatus enum, persist status instead)
-        const present = status === "ABSENT" ? false : true;
-
         // parse/validate date, default to now
         // Accepts full ISO or YYYY-MM-DD; normalize to a Date object
         const parsedDate = body?.date ? new Date(body.date) : new Date();
@@ -80,15 +67,6 @@ export async function POST(req: Request) {
         dayStart.setHours(0, 0, 0, 0);
         const dayEnd = new Date(dayStart);
         dayEnd.setDate(dayEnd.getDate() + 1);
-
-        // Checking data before sending to DB
-        // const attendancePayload = {
-        //     studentId: body.studentId,
-        //     lessonId: lessonId,
-        //     status,
-        //     date: parsedDate.toISOString(), // or pass Date object if your DB client accepts it
-        // };
-        // console.log(attendancePayload);
 
         // Search for existing attendance for same student + lesson + same day
         const existing = await prisma.attendance.findFirst({
@@ -108,11 +86,10 @@ export async function POST(req: Request) {
             result = await prisma.attendance.update({
                 where: { id: existing.id },
                 data: {
-                    date: parsedDate, // keep supplied timestamp (or store dayStart if you prefer)
-                    present,
+                    date: parsedDate,
+                    status: status as "PRESENT" | "ABSENT" | "COMPENSATION",
                 },
             });
-            // console.log("Record exists");
             return NextResponse.json(
                 { ok: true, action: "updated", data: result },
                 { status: 200 }
@@ -122,12 +99,11 @@ export async function POST(req: Request) {
             result = await prisma.attendance.create({
                 data: {
                     date: parsedDate,
-                    present,
+                    status: status as "PRESENT" | "ABSENT" | "COMPENSATION",
                     studentId: String(body.studentId),
                     lessonId,
                 },
             });
-            // console.log("creating");
 
             return NextResponse.json(
                 { ok: true, action: "created", data: result },
