@@ -48,11 +48,12 @@ model Teacher {
   img       String?
   bloodType String
   sex       UserSex
-  createdAt DateTime  @default(now())
+  birthday  DateTime
   subjects  Subject[]
   lessons   Lesson[]
   classes   Class[]
-  birthday  DateTime
+  attendance TeacherAttendance[]
+  createdAt DateTime  @default(now())
 }
 
 model Parent {
@@ -179,6 +180,17 @@ model Announcement {
 
   classId Int?
   class   Class? @relation(fields: [classId], references: [id])
+}
+
+model TeacherAttendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  present   Boolean  @default(false)
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  @@unique([teacherId, date])
+  @@map("teacher_attendance")
 }
 
 enum UserSex {

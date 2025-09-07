@@ -70,13 +70,13 @@ const menuItems = [
             },
             {
                 icon: "/attendance.png",
-                label: "Mark Attendance",
+                label: "Mark Student Attendance",
                 href: "/list/attendance",
                 visible: ["admin", "teacher"],
             },
             {
-                icon: "/attendance.png",
-                label: "Teacher Attendance",
+                icon: "/teacher.png",
+                label: "Mark Teacher Attendance",
                 href: "/list/teacher-attendance",
                 visible: ["admin"],
             },
@@ -88,7 +88,7 @@ const menuItems = [
             },
             {
                 icon: "/attendance.png",
-                label: "Student Attendance",
+                label: "Check Student Attendance",
                 href: "/list/myattendance",
                 visible: ["admin", "teacher"],
             },
