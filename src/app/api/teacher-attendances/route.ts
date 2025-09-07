@@ -111,16 +111,30 @@ export async function GET(req: Request) {
         }
 
         const role = await getUserRole();
-        if (role !== "admin") {
+        
+        // Teachers can only view their own attendance, admins can view all
+        if (role !== "admin" && role !== "teacher") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const { searchParams } = new URL(req.url);
         const date = searchParams.get("date");
         const teacherId = searchParams.get("teacherId");
+        const from = searchParams.get("from");
+        const to = searchParams.get("to");
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "50");
 
         const where: any = {};
         
+        // Teachers can only access their own data
+        if (role === "teacher") {
+            where.teacherId = userId;
+        } else if (teacherId) {
+            where.teacherId = teacherId;
+        }
+
+        // Date filtering
         if (date) {
             const parsedDate = new Date(date);
             const dayStart = new Date(parsedDate);
@@ -132,26 +146,59 @@ export async function GET(req: Request) {
                 gte: dayStart,
                 lt: dayEnd,
             };
+        } else if (from || to) {
+            where.date = {};
+            if (from) {
+                const fromDate = new Date(from);
+                fromDate.setHours(0, 0, 0, 0);
+                where.date.gte = fromDate;
+            }
+            if (to) {
+                const toDate = new Date(to);
+                toDate.setHours(23, 59, 59, 999);
+                where.date.lte = toDate;
+            }
         }
 
-        if (teacherId) {
-            where.teacherId = teacherId;
-        }
+        const [attendances, total] = await Promise.all([
+            prisma.teacherAttendance.findMany({
+                where,
+                include: {
+                    teacher: {
+                        select: { id: true, name: true, surname: true, username: true }
+                    }
+                },
+                orderBy: [
+                    { date: "desc" },
+                    { teacher: { name: "asc" } }
+                ],
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.teacherAttendance.count({ where })
+        ]);
 
-        const attendances = await prisma.teacherAttendance.findMany({
-            where,
-            include: {
-                teacher: {
-                    select: { id: true, name: true, surname: true, username: true }
-                }
+        // Calculate statistics
+        const totalDays = total;
+        const presentDays = attendances.filter(a => a.present).length;
+        const absentDays = totalDays - presentDays;
+        const percentage = totalDays === 0 ? 0 : ((presentDays / totalDays) * 100);
+
+        return NextResponse.json({ 
+            data: attendances,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
             },
-            orderBy: [
-                { date: "desc" },
-                { teacher: { name: "asc" } }
-            ]
-        });
-
-        return NextResponse.json({ data: attendances }, { status: 200 });
+            statistics: {
+                totalDays,
+                presentDays,
+                absentDays,
+                percentage: parseFloat(percentage.toFixed(1))
+            }
+        }, { status: 200 });
     } catch (err: any) {
         return NextResponse.json(
             { error: err.message || "invalid request" },

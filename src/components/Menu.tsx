@@ -75,22 +75,34 @@ const menuItems = [
                 visible: ["admin", "teacher"],
             },
             {
+                icon: "/attendance.png",
+                label: "Student Attendance History",
+                href: "/list/myattendance",
+                visible: ["admin", "teacher"],
+            },
+            {
                 icon: "/teacher.png",
                 label: "Mark Teacher Attendance",
                 href: "/list/teacher-attendance",
                 visible: ["admin"],
             },
             {
+                icon: "/teacher.png", 
+                label: "Teacher Attendance History",
+                href: "/list/teacher-attendance-history",
+                visible: ["admin"],
+            },
+            {
+                icon: "/teacher.png",
+                label: "My Attendance",
+                href: "/list/teacher-attendance-history", 
+                visible: ["teacher"],
+            },
+            {
                 icon: "/attendance.png",
                 label: "Check Attendance",
                 href: "/list/myattendance",
                 visible: ["parent", "student"],
-            },
-            {
-                icon: "/attendance.png",
-                label: "Check Student Attendance",
-                href: "/list/myattendance",
-                visible: ["admin", "teacher"],
             },
             {
                 icon: "/calendar.png",
