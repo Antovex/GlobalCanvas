@@ -4,6 +4,9 @@ CREATE TYPE "UserSex" AS ENUM ('MALE', 'FEMALE');
 -- CreateEnum
 CREATE TYPE "Day" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
+-- CreateEnum
+CREATE TYPE "AttendanceStatus" AS ENUM ('PRESENT', 'ABSENT', 'COMPENSATION');
+
 -- CreateTable
 CREATE TABLE "Admin" (
     "id" TEXT NOT NULL,
@@ -133,7 +136,7 @@ CREATE TABLE "Result" (
 CREATE TABLE "Attendance" (
     "id" SERIAL NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "present" BOOLEAN NOT NULL,
+    "status" "AttendanceStatus" NOT NULL DEFAULT 'ABSENT',
     "studentId" TEXT NOT NULL,
     "lessonId" INTEGER NOT NULL,
 

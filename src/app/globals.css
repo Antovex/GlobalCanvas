@@ -97,7 +97,7 @@
     margin: 0px 5px !important;
     width: 99% !important;
     display: flex !important;
-    flex-direction: column !important; /* stack time above/below title */
+    flex-direction: row !important; /* stack time above/below title */
     align-items: flex-start !important;
     box-sizing: border-box !important;
     white-space: normal !important;
