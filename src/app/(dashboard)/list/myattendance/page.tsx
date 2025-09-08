@@ -36,14 +36,17 @@ const columns = [
     {
         header: "Class",
         accessor: "class",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Subject",
         accessor: "subject",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Lesson",
         accessor: "lesson",
+        className: "hidden md:table-cell text-center",
     },
     {
         header: "Date",
@@ -91,12 +94,12 @@ const renderRow = (item: AttendanceList) => (
                 <h3 className="font-semibold">
                     {item.student.name + " " + item.student.surname}
                 </h3>
-                <p className="text-xs text-gray-500">{item.student.id}</p>
+                <p className="hidden md:table-cell text-xs text-gray-500">{item.student.id}</p>
             </div>
         </td>
-        <td className="p-4">{item.student.class.name}</td>
-        <td className="p-4">{item.lesson.subject.name}</td>
-        <td className="p-4">{item.lesson.name}</td>
+        <td className="hidden md:table-cell p-4">{item.student.class.name}</td>
+        <td className="hidden md:table-cell p-4">{item.lesson.subject.name}</td>
+        <td className="hidden md:table-cell p-4">{item.lesson.name}</td>
         <td className="p-4">
             {new Intl.DateTimeFormat("en-US").format(new Date(item.date))}
         </td>
