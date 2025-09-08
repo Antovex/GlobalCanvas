@@ -55,7 +55,7 @@ const StudentForm = ({
         if (data?.id) d.id = data.id;
         // console.log("hello");
         // console.log(data);
-         startTransition(() => {
+        startTransition(() => {
             formAction({ ...d, img: img?.secure_url });
         });
         // formAction({ ...data, img: img?.secure_url });
@@ -156,13 +156,39 @@ const StudentForm = ({
                     error={errors.birthday}
                     type="date"
                 />
-                <InputField
+                {/* <InputField
                     label="Parent Id"
                     name="parentId"
                     defaultValue={data?.parentId}
                     register={register}
                     error={errors.parentId}
-                />
+                /> */}
+                <div className="flex flex-col gap-2 w-full md:w-1/4">
+                    <label className="text-xs text-gray-500">Parent</label>
+                    <select
+                        className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+                        {...register("parentId")}
+                        defaultValue={data?.parentId || ""}
+                    >
+                        <option value="">Select Parent</option>
+                        {relatedData?.parents?.map(
+                            (parent: {
+                                id: string;
+                                name: string;
+                                surname: string;
+                            }) => (
+                                <option value={parent.id} key={parent.id}>
+                                    {parent.name} {parent.surname}
+                                </option>
+                            )
+                        )}
+                    </select>
+                    {errors.parentId?.message && (
+                        <p className="text-xs text-red-400">
+                            {errors.parentId.message.toString()}
+                        </p>
+                    )}
+                </div>
                 <div className="flex flex-col gap-2 w-full md:w-1/4">
                     <label className="text-xs text-gray-500">Sex</label>
                     <select
@@ -248,7 +274,7 @@ const StudentForm = ({
                                 <div
                                     className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
                                     onClick={() => {
-                                    // mark as starting (user opened uploader)
+                                        // mark as starting (user opened uploader)
                                         setUploadState("uploading");
                                         open();
                                     }}

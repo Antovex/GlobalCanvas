@@ -174,7 +174,7 @@ const StudentListPage = async ({ searchParams }: any) => {
                         //         height={16}
                         //     />
                         // </button>
-                        < FormContainer table="student" type="delete" id={item.id} />
+                        <FormContainer table="student" type="delete" id={item.id} />
                     )}
                 </div>
             </td>

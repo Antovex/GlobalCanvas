@@ -7,6 +7,7 @@ import {
     SubjectSchema,
     TeacherSchema,
     LessonSchema,
+    ParentSchema
 } from "./formValidationSchemas";
 import { prisma } from "./prisma";
 import { getUserRole } from "./util";
@@ -653,3 +654,103 @@ export async function deleteSupply(id: number) {
         throw new Error("Failed to delete supply");
     }
 }
+
+export const createParent = async (
+    currentState: CurrentState,
+    data: ParentSchema
+) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        console.log("Only admins can create parents...");
+        return { success: false, error: true };
+    }
+    try {
+        const client = await clerkClient();
+        const user = await client.users.createUser({
+            username: data.username,
+            password: data.password,
+            firstName: data.name,
+            lastName: data.surname,
+            publicMetadata: { role: "parent" },
+        });
+
+        await prisma.parent.create({
+            data: {
+                id: user.id,
+                username: data.username,
+                name: data.name,
+                surname: data.surname,
+                email: data.email || null,
+                phone: data.phone || "-",
+                address: data.address,
+            },
+        });
+
+        return { success: true, error: false };
+    } catch (err) {
+        console.error("Error creating parent:", err);
+        return { success: false, error: true };
+    }
+};
+
+export const updateParent = async (
+    currentState: CurrentState,
+    data: ParentSchema
+) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        return { success: false, error: true };
+    }
+    if (!data.id) {
+        return { success: false, error: true };
+    }
+    try {
+        const client = await clerkClient();
+        await client.users.updateUser(data.id, {
+            username: data.username,
+            ...(data.password !== "" && { password: data.password }),
+            firstName: data.name,
+            lastName: data.surname,
+        });
+
+        await prisma.parent.update({
+            where: { id: data.id },
+            data: {
+                username: data.username,
+                name: data.name,
+                surname: data.surname,
+                email: data.email || null,
+                phone: data.phone || "-",
+                address: data.address,
+            },
+        });
+        return { success: true, error: false };
+    } catch (err) {
+        console.error("Error updating parent:", err);
+        return { success: false, error: true };
+    }
+};
+
+export const deleteParent = async (
+    currentState: CurrentState,
+    data: FormData
+) => {
+    const role = await getUserRole();
+    if (role !== "admin") {
+        return { success: false, error: true };
+    }
+    const id = data.get("id") as string;
+    try {
+        const client = await clerkClient();
+        await client.users.deleteUser(id);
+
+        await prisma.parent.delete({
+            where: { id },
+        });
+
+        return { success: true, error: false };
+    } catch (err) {
+        console.error("Error deleting parent:", err);
+        return { success: false, error: true };
+    }
+};
