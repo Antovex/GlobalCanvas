@@ -32,9 +32,10 @@ const SupplyDeleteButton = ({ supplyId, supplyName }: SupplyDeleteButtonProps) =
         <button
             onClick={handleDelete}
             disabled={loading}
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 disabled:opacity-50"
+            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 disabled:opacity-50 transition"
+            aria-label={`Delete ${supplyName}`}
         >
-            <Image src="/delete.png" alt="Delete" width={16} height={16} />
+            <Image src="/delete.png" alt="Delete" width={14} height={14} className="sm:w-[16px] sm:h-[16px]" />
         </button>
     );
 };

@@ -11,11 +11,11 @@ const SupplyFormModal = () => {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-Yellow hover:brightness-95 active:scale-95 transition"
+                aria-label="Add new supply"
             >
-                <Image src="/create.png" alt="Add Supply" width={16} height={16} />
+                <Image src="/create.png" alt="Add Supply" width={18} height={18} />
             </button>
-
             {isOpen && <SupplyForm onClose={() => setIsOpen(false)} />}
         </>
     );

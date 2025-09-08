@@ -35,19 +35,21 @@ const QuantityControl = ({ supplyId, currentQuantity }: QuantityControlProps) =>
             <button
                 onClick={() => handleQuantityChange(-1)}
                 disabled={loading || quantity <= 0}
-                className="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-base sm:text-lg"
+                aria-label="Decrease quantity"
             >
                 -
             </button>
-            
-            <span className="mx-2 min-w-[3rem] text-center font-semibold">
+
+            <span className="mx-1 sm:mx-2 min-w-[2.5rem] sm:min-w-[3rem] text-center font-semibold text-sm sm:text-base">
                 {quantity}
             </span>
-            
+
             <button
                 onClick={() => handleQuantityChange(1)}
                 disabled={loading}
-                className="w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-100 text-green-600 hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-base sm:text-lg"
+                aria-label="Increase quantity"
             >
                 +
             </button>

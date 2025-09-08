@@ -24,13 +24,19 @@ const SupplyForm = ({ onClose }: SupplyFormProps) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+                className="absolute inset-0 bg-black/50"
+                onClick={onClose}
+                aria-hidden="true"
+            />
+            <div className="relative bg-white w-full max-w-sm sm:max-w-md mx-4 rounded-lg p-5 sm:p-6 shadow-lg overflow-y-auto max-h-[90vh]">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold">Add New Supply</h2>
+                    <h2 className="text-base sm:text-lg font-semibold">Add New Supply</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 hover:text-gray-700 text-lg leading-none"
+                        aria-label="Close form"
                     >
                         ✕
                     </button>
@@ -38,20 +44,20 @@ const SupplyForm = ({ onClose }: SupplyFormProps) => {
 
                 <form action={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                             Supply Name *
                         </label>
                         <input
                             type="text"
                             name="name"
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             placeholder="Enter supply name"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                             Initial Quantity
                         </label>
                         <input
@@ -59,22 +65,22 @@ const SupplyForm = ({ onClose }: SupplyFormProps) => {
                             name="quantity"
                             min="0"
                             defaultValue="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                     </div>
 
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 text-sm"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 text-sm"
                         >
                             {loading ? "Adding..." : "Add Supply"}
                         </button>
