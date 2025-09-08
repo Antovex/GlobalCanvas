@@ -193,6 +193,14 @@ model TeacherAttendance {
   @@map("teacher_attendance")
 }
 
+model Supply {
+  id       Int    @id @default(autoincrement())
+  name     String
+  quantity Int    @default(0)
+  
+  @@map("supplies")
+}
+
 enum UserSex {
   MALE
   FEMALE

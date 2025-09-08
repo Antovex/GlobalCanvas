@@ -110,6 +110,12 @@ const menuItems = [
                 href: "/list/events",
                 visible: ["admin", "teacher", "student", "parent"],
             },
+            {
+                icon: "/create.png",
+                label: "Supplies",
+                href: "/list/supplies",
+                visible: ["admin"],
+            },
             // {
             //     icon: "/message.png",
             //     label: "Messages",

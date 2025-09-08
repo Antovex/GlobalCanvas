@@ -10,6 +10,7 @@ import {
 } from "./formValidationSchemas";
 import { prisma } from "./prisma";
 import { getUserRole } from "./util";
+import { revalidatePath } from "next/cache";
 
 type CurrentState = { success: boolean; error: boolean };
 
@@ -574,3 +575,81 @@ export const deleteLesson = async (
         return { success: false, error: true };
     }
 };
+
+export async function createSupply(formData: FormData) {
+    const role = await getUserRole();
+    
+    if (role !== "admin") {
+        throw new Error("Unauthorized");
+    }
+
+    const name = formData.get("name") as string;
+    const quantity = parseInt(formData.get("quantity") as string) || 0;
+
+    if (!name || name.trim() === "") {
+        throw new Error("Supply name is required");
+    }
+
+    try {
+        await prisma.supply.create({
+            data: {
+                name: name.trim(),
+                quantity,
+            },
+        });
+
+        revalidatePath("/list/supplies");
+        return { success: true };
+    } catch (error) {
+        throw new Error("Failed to create supply");
+    }
+}
+
+export async function updateSupplyQuantity(id: number, change: number) {
+    const role = await getUserRole();
+    
+    if (role !== "admin") {
+        throw new Error("Unauthorized");
+    }
+
+    try {
+        const supply = await prisma.supply.findUnique({
+            where: { id },
+        });
+
+        if (!supply) {
+            throw new Error("Supply not found");
+        }
+
+        const newQuantity = Math.max(0, supply.quantity + change);
+
+        await prisma.supply.update({
+            where: { id },
+            data: { quantity: newQuantity },
+        });
+
+        revalidatePath("/list/supplies");
+        return { success: true };
+    } catch (error) {
+        throw new Error("Failed to update supply quantity");
+    }
+}
+
+export async function deleteSupply(id: number) {
+    const role = await getUserRole();
+    
+    if (role !== "admin") {
+        throw new Error("Unauthorized");
+    }
+
+    try {
+        await prisma.supply.delete({
+            where: { id },
+        });
+
+        revalidatePath("/list/supplies");
+        return { success: true };
+    } catch (error) {
+        throw new Error("Failed to delete supply");
+    }
+}

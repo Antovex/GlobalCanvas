@@ -288,6 +288,24 @@ async function main() {
         });
     }
 
+    // Create sample supplies
+    const sampleSupplies = [
+        { name: "Whiteboard Markers", quantity: 25 },
+        { name: "Copy Paper (A4)", quantity: 500 },
+        { name: "Pencils", quantity: 100 },
+        { name: "Erasers", quantity: 50 },
+        { name: "Chalk", quantity: 0 }, // Out of stock example
+        { name: "Notebooks", quantity: 75 },
+        { name: "Staplers", quantity: 5 },
+        { name: "Paper Clips", quantity: 200 },
+    ];
+
+    for (const supply of sampleSupplies) {
+        await prisma.supply.create({
+            data: supply,
+        });
+    }
+
     // Announcements
     for (let i = 1; i <= 4; i++) {
         await prisma.announcement.create({
