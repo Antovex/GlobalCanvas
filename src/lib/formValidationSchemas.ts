@@ -67,7 +67,6 @@ export const studentSchema = z.object({
     name: z.string().min(1, { message: "First name is required!" }),
     surname: z.string().min(1, { message: "Last name is required!" }),
     email: z
-        // .string()
         .email({ message: "Invalid email address!" })
         .optional()
         .or(z.literal("")),
@@ -77,9 +76,28 @@ export const studentSchema = z.object({
     bloodType: z.string().min(1, { message: "Blood Type is required!" }),
     birthday: z.coerce.date({ message: "Birthday is required!" }),
     sex: z.enum(["MALE", "FEMALE"], { message: "Sex is required!" }),
-    // gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
     classId: z.coerce.number().min(1, { message: "Class is required!" }),
-    parentId: z.string().min(1, { message: "Parent Id is required!" }),
+    parentId: z.string().min(1, { message: "A parent must be selected or created." }),
+
+    // Optional fields for creating a new parent
+    parentUsername: z.string().optional(),
+    parentPassword: z.string().optional(),
+    parentName: z.string().optional(),
+    parentSurname: z.string().optional(),
+    parentEmail: z.string().email().optional().or(z.literal("")),
+    parentPhone: z.string().optional(),
+    parentAddress: z.string().optional(),
+}).refine(data => {
+    // If creating a new parent, the required parent fields must be filled
+    if (data.parentId === 'new') {
+        return !!data.parentUsername && !!data.parentPassword && !!data.parentName && !!data.parentSurname && !!data.parentAddress;
+    }
+    return true;
+}, {
+    // This message will appear if the refinement fails
+    message: "When creating a new parent, all parent fields are required.",
+    // You can specify a path to associate the error with a specific field if you want
+    path: ["parentUsername"], 
 });
 
 export type StudentSchema = z.infer<typeof studentSchema>;

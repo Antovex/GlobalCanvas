@@ -358,46 +358,83 @@ export const createStudent = async (
         console.log("Only admins can create students...");
         return { success: false, error: true };
     }
-    // console.log(data);
+    
     try {
         const classItem = await prisma.class.findUnique({
             where: { id: data.classId },
             include: { _count: { select: { students: true } } },
         });
 
-        if (classItem && classItem.capacity === classItem._count.students) {
+        if (classItem && classItem.capacity <= classItem._count.students) {
+            // Using a more specific error message would be better here
             return { success: false, error: true };
         }
 
         const client = await clerkClient();
-        const user = await client.users.createUser({
-            username: data.username,
-            password: data.password,
-            firstName: data.name,
-            lastName: data.surname,
-            publicMetadata: { role: "student" },
-        });
+        let finalParentId = data.parentId;
 
-        await prisma.student.create({
-            data: {
-                id: user.id,
+        // Transaction to ensure both parent and student are created, or neither
+        await prisma.$transaction(async (tx) => {
+            // Scenario 1: Create a new parent
+            if (data.parentId === 'new') {
+                if (!data.parentUsername || !data.parentPassword || !data.parentName || !data.parentSurname || !data.parentAddress) {
+                    throw new Error("Missing required fields for new parent.");
+                }
+
+                const parentUser = await client.users.createUser({
+                    username: data.parentUsername,
+                    password: data.parentPassword,
+                    firstName: data.parentName,
+                    lastName: data.parentSurname,
+                    ...(data.parentEmail
+                        ? { emailAddresses: [{ emailAddress: data.parentEmail }] }
+                        : {}),
+                    publicMetadata: { role: "parent" },
+                });
+
+                const newParent = await tx.parent.create({
+                    data: {
+                        id: parentUser.id,
+                        username: data.parentUsername,
+                        name: data.parentName,
+                        surname: data.parentSurname,
+                        email: data.parentEmail || null,
+                        phone: data.parentPhone || "-",
+                        address: data.parentAddress,
+                    },
+                });
+                finalParentId = newParent.id;
+            }
+
+            // Create the student user in Clerk
+            const studentUser = await client.users.createUser({
                 username: data.username,
-                name: data.name,
-                surname: data.surname,
-                email: data.email || null,
-                phone: data.phone || null,
-                address: data.address,
-                img: data.img || null,
-                bloodType: data.bloodType,
-                sex: data.sex,
-                birthday: data.birthday,
-                // gradeId: data.gradeId,
-                classId: data.classId,
-                parentId: data.parentId,
-            },
+                password: data.password,
+                firstName: data.name,
+                lastName: data.surname,
+                publicMetadata: { role: "student" },
+            });
+
+            // Create the student in the database, linked to the parent
+            await tx.student.create({
+                data: {
+                    id: studentUser.id,
+                    username: data.username,
+                    name: data.name,
+                    surname: data.surname,
+                    email: data.email || null,
+                    phone: data.phone || null,
+                    address: data.address,
+                    img: data.img || null,
+                    bloodType: data.bloodType,
+                    sex: data.sex,
+                    birthday: data.birthday,
+                    classId: data.classId,
+                    parentId: finalParentId, // Use the determined parent ID
+                },
+            });
         });
 
-        // revalidatePath("/list/students");
         return { success: true, error: false };
     } catch (err) {
         console.log(err);
