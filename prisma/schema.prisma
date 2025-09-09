@@ -35,6 +35,7 @@ model Student {
   attendances Attendance[]
   results     Result[]
   birthday    DateTime
+  fees      StudentFee[]
 }
 
 model Teacher {
@@ -180,6 +181,22 @@ model Announcement {
 
   classId Int?
   class   Class? @relation(fields: [classId], references: [id])
+}
+
+model StudentFee {
+  id        Int      @id @default(autoincrement())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  month     String   // Format: "2024-01" (YYYY-MM)
+  year      Int
+  amount    Float    @default(2750.00) // Default monthly fee
+  paid      Boolean  @default(false)
+  paidDate  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([studentId, month])
+  @@map("student_fees")
 }
 
 model TeacherAttendance {

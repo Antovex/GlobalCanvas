@@ -87,7 +87,7 @@ const menuItems = [
                 visible: ["admin"],
             },
             {
-                icon: "/teacher.png", 
+                icon: "/teacher.png",
                 label: "Teacher Attendance History",
                 href: "/list/teacher-attendance-history",
                 visible: ["admin"],
@@ -95,7 +95,7 @@ const menuItems = [
             {
                 icon: "/teacher.png",
                 label: "My Attendance",
-                href: "/list/teacher-attendance-history", 
+                href: "/list/teacher-attendance-history",
                 visible: ["teacher"],
             },
             {
@@ -103,6 +103,12 @@ const menuItems = [
                 label: "Check Attendance",
                 href: "/list/myattendance",
                 visible: ["parent", "student"],
+            },
+            {
+                icon: "/finance.png",
+                label: "Student Fees",
+                href: "/list/student-fees",
+                visible: ["admin"],
             },
             {
                 icon: "/calendar.png",
@@ -206,7 +212,9 @@ export default function Menu({ role }: { role: string }) {
             <div className="hidden lg:block mt-4 text-sm">
                 {menuItems.map((i) => (
                     <div className="flex flex-col gap-2" key={i.title}>
-                        <span className="text-gray-400 font-light my-4">{i.title}</span>
+                        <span className="text-gray-400 font-light my-4">
+                            {i.title}
+                        </span>
                         {i.items.map((item) =>
                             item.visible.includes(role) ? (
                                 <Link
@@ -214,7 +222,12 @@ export default function Menu({ role }: { role: string }) {
                                     key={item.label}
                                     className="flex items-center justify-start gap-4 md:px-3 text-gray-500 py-2 rounded-md hover:bg-SkyLight"
                                 >
-                                    <Image src={item.icon} alt="" width={20} height={20} />
+                                    <Image
+                                        src={item.icon}
+                                        alt=""
+                                        width={20}
+                                        height={20}
+                                    />
                                     <span>{item.label}</span>
                                 </Link>
                             ) : null
@@ -234,10 +247,19 @@ export default function Menu({ role }: { role: string }) {
                     <aside className="fixed left-0 top-0 h-full w-64 bg-white z-50 p-4 overflow-y-auto shadow-xl">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <Image src="/logo.png" alt="Logo" width={28} height={28} />
+                                <Image
+                                    src="/logo.png"
+                                    alt="Logo"
+                                    width={28}
+                                    height={28}
+                                />
                                 <div className="flex flex-col leading-tight">
-                                    <span className="font-bold">GlobalCanvas</span>
-                                    <span className="text-xs text-gray-500">Branch 1</span>
+                                    <span className="font-bold">
+                                        GlobalCanvas
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                        Branch 1
+                                    </span>
                                 </div>
                             </div>
                             <button
@@ -272,7 +294,9 @@ export default function Menu({ role }: { role: string }) {
 
                         {menuItems.map((i) => (
                             <div className="flex flex-col gap-2" key={i.title}>
-                                <span className="text-gray-400 font-light my-2">{i.title}</span>
+                                <span className="text-gray-400 font-light my-2">
+                                    {i.title}
+                                </span>
                                 {i.items.map((item) =>
                                     item.visible.includes(role) ? (
                                         <Link
@@ -281,7 +305,12 @@ export default function Menu({ role }: { role: string }) {
                                             onClick={() => setOpen(false)}
                                             className="flex items-center gap-4 text-gray-600 py-2 rounded-md hover:bg-gray-100"
                                         >
-                                            <Image src={item.icon} alt="" width={20} height={20} />
+                                            <Image
+                                                src={item.icon}
+                                                alt=""
+                                                width={20}
+                                                height={20}
+                                            />
                                             <span>{item.label}</span>
                                         </Link>
                                     ) : null
@@ -293,4 +322,4 @@ export default function Menu({ role }: { role: string }) {
             )}
         </>
     );
-};
+}

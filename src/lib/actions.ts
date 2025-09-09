@@ -7,11 +7,12 @@ import {
     SubjectSchema,
     TeacherSchema,
     LessonSchema,
-    ParentSchema
+    ParentSchema,
 } from "./formValidationSchemas";
 import { prisma } from "./prisma";
 import { getUserRole } from "./util";
 import { revalidatePath } from "next/cache";
+import { DEFAULT_FEE_AMOUNT } from "./settings";
 
 type CurrentState = { success: boolean; error: boolean };
 
@@ -358,7 +359,7 @@ export const createStudent = async (
         console.log("Only admins can create students...");
         return { success: false, error: true };
     }
-    
+
     try {
         const classItem = await prisma.class.findUnique({
             where: { id: data.classId },
@@ -376,8 +377,14 @@ export const createStudent = async (
         // Transaction to ensure both parent and student are created, or neither
         await prisma.$transaction(async (tx) => {
             // Scenario 1: Create a new parent
-            if (data.parentId === 'new') {
-                if (!data.parentUsername || !data.parentPassword || !data.parentName || !data.parentSurname || !data.parentAddress) {
+            if (data.parentId === "new") {
+                if (
+                    !data.parentUsername ||
+                    !data.parentPassword ||
+                    !data.parentName ||
+                    !data.parentSurname ||
+                    !data.parentAddress
+                ) {
                     throw new Error("Missing required fields for new parent.");
                 }
 
@@ -387,7 +394,11 @@ export const createStudent = async (
                     firstName: data.parentName,
                     lastName: data.parentSurname,
                     ...(data.parentEmail
-                        ? { emailAddresses: [{ emailAddress: data.parentEmail }] }
+                        ? {
+                              emailAddresses: [
+                                  { emailAddress: data.parentEmail },
+                              ],
+                          }
                         : {}),
                     publicMetadata: { role: "parent" },
                 });
@@ -559,7 +570,10 @@ export const updateLesson = async (
         console.log("Only admins or teachers can update lessons...");
         return { success: false, error: true };
     }
-    if (typeof (data as any).id !== "number" || !Number.isFinite((data as any).id)) {
+    if (
+        typeof (data as any).id !== "number" ||
+        !Number.isFinite((data as any).id)
+    ) {
         console.error("updateLesson: missing or invalid id", (data as any).id);
         return { success: false, error: true };
     }
@@ -616,7 +630,7 @@ export const deleteLesson = async (
 
 export async function createSupply(formData: FormData) {
     const role = await getUserRole();
-    
+
     if (role !== "admin") {
         throw new Error("Unauthorized");
     }
@@ -645,7 +659,7 @@ export async function createSupply(formData: FormData) {
 
 export async function updateSupplyQuantity(id: number, change: number) {
     const role = await getUserRole();
-    
+
     if (role !== "admin") {
         throw new Error("Unauthorized");
     }
@@ -675,7 +689,7 @@ export async function updateSupplyQuantity(id: number, change: number) {
 
 export async function deleteSupply(id: number) {
     const role = await getUserRole();
-    
+
     if (role !== "admin") {
         throw new Error("Unauthorized");
     }
@@ -791,3 +805,170 @@ export const deleteParent = async (
         return { success: false, error: true };
     }
 };
+
+export async function updateStudentFeeStatus(
+    studentId: string,
+    month: string,
+    paid: boolean,
+    amount: number = DEFAULT_FEE_AMOUNT
+) {
+    const role = await getUserRole();
+
+    if (role !== "admin") {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const [year, monthNum] = month.split("-").map(Number);
+
+        const existingFee = await prisma.studentFee.findUnique({
+            where: {
+                studentId_month: {
+                    studentId,
+                    month,
+                },
+            },
+        });
+
+        if (existingFee) {
+            await prisma.studentFee.update({
+                where: { id: existingFee.id },
+                data: {
+                    paid,
+                    paidDate: paid ? new Date() : null,
+                    amount,
+                },
+            });
+        } else {
+            await prisma.studentFee.create({
+                data: {
+                    studentId,
+                    month,
+                    year,
+                    amount,
+                    paid,
+                    paidDate: paid ? new Date() : null,
+                },
+            });
+        }
+
+        return { success: true, error: null };
+    } catch (error) {
+        console.error("Error updating fee status:", error);
+        return { success: false, error: "Failed to update fee status" };
+    }
+}
+
+export async function updateFeeAmount(
+    studentId: string,
+    month: string,
+    amount: number
+) {
+    const role = await getUserRole();
+
+    if (role !== "admin") {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const [year] = month.split("-").map(Number);
+
+        const existingFee = await prisma.studentFee.findUnique({
+            where: {
+                studentId_month: {
+                    studentId,
+                    month,
+                },
+            },
+        });
+
+        if (existingFee) {
+            await prisma.studentFee.update({
+                where: { id: existingFee.id },
+                data: { amount },
+            });
+        } else {
+            await prisma.studentFee.create({
+                data: {
+                    studentId,
+                    month,
+                    year,
+                    amount,
+                    paid: false,
+                },
+            });
+        }
+
+        return { success: true, error: null };
+    } catch (error) {
+        console.error("Error updating fee amount:", error);
+        return { success: false, error: "Failed to update fee amount" };
+    }
+}
+
+export async function initializeMonthlyFees(month: string) {
+    const role = await getUserRole();
+
+    if (role !== "admin") {
+        throw new Error("Unauthorized");
+    }
+
+    try {
+        const [year] = month.split("-").map(Number);
+
+        // Get all active students
+        const students = await prisma.student.findMany({
+            select: { id: true },
+        });
+
+        // Create fee records for students who don't have one for this month
+        for (const student of students) {
+            const existingFee = await prisma.studentFee.findUnique({
+                where: {
+                    studentId_month: {
+                        studentId: student.id,
+                        month,
+                    },
+                },
+            });
+
+            if (!existingFee) {
+                await prisma.studentFee.create({
+                    data: {
+                        studentId: student.id,
+                        month,
+                        year,
+                        amount: DEFAULT_FEE_AMOUNT, // Default fee amount
+                        paid: false,
+                    },
+                });
+            }
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error initializing fees:", error);
+        throw new Error("Failed to initialize monthly fees");
+    }
+}
+
+export async function getFeesChartData(year?: number) {
+    const y = year ?? new Date().getFullYear();
+    const months = [
+        "Jan","Feb","Mar","Apr","May","Jun",
+        "Jul","Aug","Sep","Oct","Nov","Dec",
+    ];
+
+    const results = await Promise.all(
+        Array.from({ length: 12 }).map(async (_, i) => {
+            const monthStr = `${y}-${String(i + 1).padStart(2, "0")}`;
+            const agg = await prisma.studentFee.aggregate({
+                where: { month: monthStr, paid: true },
+                _sum: { amount: true },
+            });
+            return agg._sum.amount || 0;
+        })
+    );
+
+    return months.map((name, i) => ({ name, fees: results[i] }));
+}
