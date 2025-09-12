@@ -31,12 +31,12 @@ const AdminPage = async ({ searchParams }: any) => {
                     </div>
                     {/* ATTENDANCE CHART */}
                     <div className="w-full lg:w-2/3 h-[450px]">
-                        <AttendanceChartContainer />
+                        <FinanceChart />
                     </div>
                 </div>
                 {/* BOTTOM CHART */}
                 <div className="w-full h-[500px]">
-                    <FinanceChart />
+                    <AttendanceChartContainer />
                 </div>
             </div>
 
