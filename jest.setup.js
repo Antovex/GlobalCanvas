@@ -1,6 +1,22 @@
 // jest.setup.js
 import '@testing-library/jest-dom'
 
+// Mock Next.js Web API globals
+global.Request = jest.fn().mockImplementation((url, options) => ({
+  url,
+  method: options?.method || 'GET',
+  headers: new Map(Object.entries(options?.headers || {})),
+  json: async () => options?.body ? JSON.parse(options.body) : {},
+}))
+
+global.Response = {
+  json: jest.fn().mockImplementation((data, init) => ({
+    ok: true,
+    status: init?.status || 200,
+    json: async () => data,
+  })),
+}
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -34,38 +50,6 @@ jest.mock('@clerk/nextjs', () => ({
   SignedIn: ({ children }) => children,
   SignedOut: () => null,
   ClerkProvider: ({ children }) => children,
-}))
-
-// Mock Prisma Client
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    student: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    teacher: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    attendance: {
-      findMany: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    teacherAttendance: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-  },
 }))
 
 // Mock toast notifications

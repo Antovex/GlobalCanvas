@@ -101,7 +101,7 @@ describe('Pagination Component', () => {
     render(<Pagination page={3} count={50} />)
     
     const currentPageButton = screen.getByText('3').closest('button')
-    expect(currentPageButton).toHaveClass('bg-lamaSkyLight')
+    expect(currentPageButton).toHaveClass('bg-SkyLight')
   })
 
   test('handles edge case with zero count', () => {

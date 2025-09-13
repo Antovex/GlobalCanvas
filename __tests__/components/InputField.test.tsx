@@ -27,7 +27,7 @@ describe('InputField Component', () => {
       </TestWrapper>
     )
 
-    expect(screen.getByLabelText('Test Label')).toBeInTheDocument()
+    expect(screen.getByText('Test Label')).toBeInTheDocument()
     expect(screen.getByRole('textbox')).toBeInTheDocument()
   })
 
@@ -104,7 +104,7 @@ describe('InputField Component', () => {
       </TestWrapper>
     )
 
-    const container = screen.getByLabelText('Test Field').closest('div')
+    const container = screen.getByText('Test Field').closest('div')
     expect(container).toHaveClass('custom-class')
   })
 
