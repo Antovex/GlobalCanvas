@@ -105,6 +105,43 @@ NEXT_PUBLIC_CLOUDINARY_API_KEY=your_api_key
 ```
 If using seeding scripts that upload or transform images, you may also require a Cloudinary API secret (not currently referenced in example). Keep secrets out of version control.
 
+#### 5.2.1 Sentry (Optional Monitoring & Tracing)
+Add these if you want error + performance + (optional) session replay monitoring:
+```
+SENTRY_DSN=your_sentry_dsn
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+```
+Notes:
+- DSN is not a secret; it's safe to expose publicly.
+- Keep both the same unless you intentionally separate client/server projects.
+- If you only care about server errors, omit `NEXT_PUBLIC_SENTRY_DSN`.
+
+Already configured files:
+| File | Purpose |
+|------|---------|
+| `sentry.server.config.ts` | Server runtime (API routes / server components) |
+| `sentry.edge.config.ts` | Middleware / edge handlers |
+| `src/instrumentation-client.ts` | Browser (client) instrumentation + Replay |
+| `next.config.mjs` | Wraps Next config so source maps upload in builds |
+
+Adjust sampling for production (example recommendations):
+```ts
+// server / edge
+tracesSampleRate: 0.2 // or use tracesSampler
+
+// client instrumentation
+tracesSampleRate: 0.1
+replaysSessionSampleRate: 0.05
+replaysOnErrorSampleRate: 1.0
+```
+
+Trigger a test event:
+```ts
+import * as Sentry from '@sentry/nextjs'
+Sentry.captureException(new Error('Manual test error'))
+```
+Then visit your Sentry dashboard Issues view.
+
 ### 5.3 Quick Start (Local, No Docker)
 ```bash
 # 1. Clone
