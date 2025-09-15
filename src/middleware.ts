@@ -16,11 +16,15 @@ export default clerkMiddleware(async (auth, req) => {
 
     const role = (sessionClaims?.metadata as { role?: string })?.role;
 
+    // Always allow access to the root '/' route
+    if (req.nextUrl.pathname === "/") {
+        return NextResponse.next();
+    }
     for (const { matcher, allowedRoles } of matchers) {
         if (matcher(req)) {
             if (!role) {
-                // Authenticated user but no role metadata: treat as unauthorized
-                return NextResponse.redirect(new URL(`/unauthorized`, req.url));
+                // Authenticated user but no role metadata: redirect to login page
+                return NextResponse.redirect(new URL(`/`, req.url));
             }
             if (!allowedRoles.includes(role)) {
                 // Validate role against known safe values before redirecting
