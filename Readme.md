@@ -33,10 +33,11 @@ GlobalCanvas is a full‑stack, role‑aware School Management System built with
 9. [Docker Notes](#-docker-deployment-notes)
 10. [Security Recommendations](#-security--hardening-recommended-next-steps)
 11. [Contributing](#-contributing)
-12. [Troubleshooting](#-troubleshooting)
-13. [Roadmap](#-roadmap-suggested)
-14. [License](#-license)
-
+<!--
+[Troubleshooting](#-troubleshooting)
+[Roadmap](#-roadmap-suggested)
+[License](#-license)
+-->
 ---
 
 ## 🔑 Key Features
@@ -338,6 +339,7 @@ Adjust or expand it to populate demo users aligned with Clerk test accounts.
 4. Run lint before PR: `npm run lint`.
 5. Provide concise PR description (scope, changes, testing notes).
 
+<!--
 ---
 
 ## 🧪 Troubleshooting
@@ -351,22 +353,12 @@ Adjust or expand it to populate demo users aligned with Clerk test accounts.
 
 ---
 
-## 🗺 Roadmap (Suggested)
-* Public /guardian portal enhancements.
-* Bulk CSV import for students & teachers.
-* Automated fee invoicing & payment integrations.
-* Real-time notifications (WebSockets or Pusher).
-* Granular permission sets beyond coarse roles.
-* Test coverage & CI workflow.
-
----
-
 ## 📄 License
 Specify a license (e.g., MIT) in a `LICENSE` file if open-sourcing. Currently unspecified.
 
 ---
 > Keep this README updated as API surface & domain features evolve.
-
+-->
 ---
 
 ### 🖼 Architecture & Data Model
@@ -377,11 +369,12 @@ Specify a license (e.g., MIT) in a `LICENSE` file if open-sourcing. Currently un
 
 </details>
 
-### 📷 (Optional) Screens / Dashboards
+<!--### 📷 (Optional) Screens / Dashboards
 Add representative screenshots (e.g. `public/` assets) here to showcase dashboards, charts & calendars.
-
+-->
 ---
 
 <div align="center">
 <sub>Crafted with precision. Extend, adapt, and build great academic tools on top of GlobalCanvas.</sub>
 </div>
+
