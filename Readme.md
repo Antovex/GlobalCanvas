@@ -21,6 +21,30 @@ GlobalCanvas is a full‑stack, role‑aware School Management System built with
 
 > Users • Academic Structure • Attendance • Assessments • Results • Fees • Announcements • Events • Inventory • Analytics
 
+---
+
+### 🎬 Demo
+
+<p align="center">
+    <em>Quick preview of the login flow and admin dashboard.</em>
+</p>
+
+<div align="center">
+    <picture>
+        <source media="(max-width: 700px)" srcset="./login_globalcanvas.gif">
+        <img src="./login_globalcanvas.gif" alt="GlobalCanvas login flow demo" width="48%" style="max-width: 480px; min-width: 260px; margin: 4px;" />
+    </picture>
+    <picture>
+        <source media="(max-width: 700px)" srcset="./admin_page.gif">
+        <img src="./admin_page.gif" alt="Admin dashboard interactions demo" width="48%" style="max-width: 480px; min-width: 260px; margin: 4px;" />
+    </picture>
+</div>
+
+<p align="center">
+    <sub>If the GIFs do not render on GitHub, open the repository root where <code>login_globalcanvas.gif</code> and <code>admin_page.gif</code> are located.</sub>
+</p>
+
+---
 ### 🧭 Table of Contents
 1. [Key Features](#-key-features)
 2. [Tech Stack](#-tech-stack)
@@ -378,3 +402,4 @@ Add representative screenshots (e.g. `public/` assets) here to showcase dashboar
 <sub>Crafted with precision. Extend, adapt, and build great academic tools on top of GlobalCanvas.</sub>
 </div>
 
+---
