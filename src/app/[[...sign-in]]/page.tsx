@@ -40,7 +40,7 @@ const LoginPage = () => {
     }, [isSubmitting]);
 
     return (
-        <div className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 to-white">
+        <div className="h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-br from-purple-400 to-white p-4">
             <div className="relative">
                 <div className="absolute inset-0 blur-xl opacity-40 bg-gradient-to-br from-purple-300 via-purple-100 to-sky-100 rounded-2xl" />
                 <SignIn.Root>
@@ -128,6 +128,21 @@ const LoginPage = () => {
                         </SignIn.Action>
                     </SignIn.Step>
                 </SignIn.Root>
+            </div>
+            <div className="w-full flex justify-center">
+                <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 shadow-2xl border border-purple-100 max-w-[200px] w-full">
+                    <h4 className="text-xs text-purple-600 font-semibold mb-3">Demo credentials</h4>
+                    <div className="flex items-center justify-between gap-6">
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-purple-700">Username</span>
+                            <span className="text-sm font-semibold text-purple-700">Password</span>
+                        </div>
+                        <div className="flex flex-col text-right">
+                            <span className="text-sm text-gray-600">admin</span>
+                            <span className="text-sm text-gray-600">admin</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
