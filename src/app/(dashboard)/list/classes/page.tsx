@@ -1,21 +1,26 @@
 import DbError from "@/components/DbError";
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
+import {
+    DemoClassList,
+    getDemoClasses,
+    shouldUseDemoData,
+} from "@/lib/demoFallback";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserRole } from "@/lib/util";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type ClassList = Class & { supervisor: Teacher };
+type ClassList = Class & { supervisor: Teacher | null };
+type ClassRow = ClassList | DemoClassList;
 
 const ClassListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
+    const demoFallbackAllowed = await shouldUseDemoData();
 
-    // const { page, ...queryParams } = searchParams;
     const rawSearchParams = await searchParams;
     const normalized: Record<string, string | undefined> = {};
     for (const [k, v] of Object.entries(rawSearchParams || {})) {
@@ -24,8 +29,6 @@ const ClassListPage = async ({ searchParams }: any) => {
     const { page, ...queryParams } = normalized;
 
     const p = page ? parseInt(page) : 1;
-
-    // URL PARAMS CONDITIONS
     const query: Prisma.ClassWhereInput = {};
 
     if (queryParams) {
@@ -45,11 +48,13 @@ const ClassListPage = async ({ searchParams }: any) => {
         }
     }
 
-    let data = [];
+    let data: ClassRow[] = [];
     let count = 0;
-    let dbError = null;
+    let isDemoData = false;
+    let dbError: string | null = null;
+
     try {
-        [data, count] = await prisma.$transaction([
+        const [dbData, dbCount] = await prisma.$transaction([
             prisma.class.findMany({
                 where: query,
                 include: {
@@ -62,6 +67,16 @@ const ClassListPage = async ({ searchParams }: any) => {
                 where: query,
             }),
         ]);
+
+        data = dbData;
+        count = dbCount;
+
+        if (data.length === 0 && demoFallbackAllowed) {
+            const demo = getDemoClasses(p, queryParams.search);
+            data = demo.data;
+            count = demo.count;
+            isDemoData = true;
+        }
     } catch (error: any) {
         dbError = error.message || "Unable to connect to the database.";
         return (
@@ -82,17 +97,12 @@ const ClassListPage = async ({ searchParams }: any) => {
             accessor: "capacity",
             className: "hidden md:table-cell text-center",
         },
-        // {
-        //     header: "Grade",
-        //     accessor: "grade",
-        //     className: "hidden md:table-cell text-center",
-        // },
         {
             header: "Supervisor",
             accessor: "supervisor",
             className: "hidden md:table-cell text-center",
         },
-        ...(role === "admin"
+        ...(role === "admin" && !isDemoData
             ? [
                   {
                       header: "Actions",
@@ -109,35 +119,24 @@ const ClassListPage = async ({ searchParams }: any) => {
               ]),
     ];
 
-    // Make each row of the table for passing it to the Table component
-    const renderRow = (item: ClassList) => (
+    const renderRow = (item: ClassRow) => (
         <tr
             key={item.id}
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
         >
             <td className="text-center gap-4 p-4">{item.name}</td>
+            <td className="hidden md:table-cell text-center">{item.capacity}</td>
             <td className="hidden md:table-cell text-center">
-                {item.capacity}
-            </td>
-            {/* <td className="hidden md:table-cell text-center">{item.name[0]}</td> */}
-            <td className="hidden md:table-cell text-center">
-                {item.supervisor.name + " " + item.supervisor.surname}
+                {item.supervisor
+                    ? `${item.supervisor.name} ${item.supervisor.surname}`
+                    : "-"}
             </td>
             <td>
                 <div className="flex items-center justify-center gap-2 px-4">
-                    {/* EDIT or DELETE A CLASS */}
-                    {role === "admin" && (
+                    {role === "admin" && !isDemoData && (
                         <>
-                            <FormContainer
-                                table="class"
-                                type="update"
-                                data={item}
-                            />
-                            <FormContainer
-                                table="class"
-                                type="delete"
-                                id={item.id}
-                            />
+                            <FormContainer table="class" type="update" data={item} />
+                            <FormContainer table="class" type="delete" id={item.id} />
                         </>
                     )}
                 </div>
@@ -147,47 +146,30 @@ const ClassListPage = async ({ searchParams }: any) => {
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-            {/* TOP BAR */}
             <div className="flex items-center justify-between">
                 <h1 className="hidden md:block text-lg font-semibold">
                     All Classes
                 </h1>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                     <TableSearch placeholder="Search with Class Name..." />
-                    {/* Filter Button */}
                     <div className="flex items-center gap-4 self-end">
                         <button
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow"
                             aria-label="Filter classes"
                         >
-                            <Image
-                                src="/filter.png"
-                                alt=""
-                                width={14}
-                                height={14}
-                            />
+                            <Image src="/filter.png" alt="" width={14} height={14} />
                         </button>
-                        {/* Sort Button */}
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
-                            <Image
-                                src="/sort.png"
-                                alt=""
-                                width={14}
-                                height={14}
-                            />
+                            <Image src="/sort.png" alt="" width={14} height={14} />
                         </button>
-                        {/* Add new subject button */}
-                        {role === "admin" && (
+                        {role === "admin" && !isDemoData && (
                             <FormContainer table="class" type="create" />
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* LIST */}
             <Table columns={columns} renderRow={renderRow} data={data} />
-
-            {/* PAGINATION BAR */}
             <Pagination page={p} count={count} />
         </div>
     );

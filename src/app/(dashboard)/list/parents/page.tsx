@@ -1,28 +1,36 @@
+import DbError from "@/components/DbError";
+import FormContainer from "@/components/FormContainer";
+import Pagination from "@/components/Pagination";
+import Table from "@/components/Table";
+import TableSearch from "@/components/TableSearch";
+import {
+    DemoParentList,
+    getDemoParents,
+    shouldUseDemoData,
+} from "@/lib/demoFallback";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserRole } from "@/lib/util";
 import { Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import FormContainer from "@/components/FormContainer";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
 
 type ParentList = {
     id: string;
     name: string;
     surname: string;
     email?: string | null;
-    phone?: string;
+    phone?: string | null;
     address: string;
     students: { name: string; surname: string }[];
 };
 
+type ParentRow = ParentList | DemoParentList;
+
 const ParentListPage = async ({ searchParams }: any) => {
     const role = await getUserRole();
-    
+    const demoFallbackAllowed = await shouldUseDemoData();
+
     if (role !== "admin") {
         redirect("/");
     }
@@ -37,13 +45,15 @@ const ParentListPage = async ({ searchParams }: any) => {
     const p = parseInt(page);
 
     const query: Prisma.ParentWhereInput = {};
-    
+
     if (queryParams.search) {
         query.name = { contains: queryParams.search, mode: "insensitive" };
     }
 
-    let data: ParentList[] = [];
+    let data: ParentRow[] = [];
     let count = 0;
+    let isDemoData = false;
+    let dbError: string | null = null;
 
     try {
         const [parents, total] = await Promise.all([
@@ -63,47 +73,71 @@ const ParentListPage = async ({ searchParams }: any) => {
 
         data = parents;
         count = total;
-    } catch (error) {
-        console.error("Error fetching parents:", error);
+
+        if (data.length === 0 && demoFallbackAllowed) {
+            const demo = getDemoParents(p, queryParams.search);
+            data = demo.data;
+            count = demo.count;
+            isDemoData = true;
+        }
+    } catch (error: any) {
+        dbError = error.message || "Unable to connect to the database.";
+        return (
+            <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+                {dbError && <DbError message={dbError} />}
+            </div>
+        );
     }
 
     const columns = [
         { header: "Info", accessor: "info", className: "text-center" },
-        // { header: "Parent ID", accessor: "parentId", className: "hidden md:table-cell" },
-        { header: "Students", accessor: "students", className: "hidden md:table-cell text-center" },
-        { header: "Phone", accessor: "phone", className: "hidden lg:table-cell text-center" },
-        { header: "Address", accessor: "address", className: "hidden lg:table-cell text-center" },
-        { header: "Actions", accessor: "action", className: "text-center" },
+        {
+            header: "Students",
+            accessor: "students",
+            className: "hidden md:table-cell text-center",
+        },
+        {
+            header: "Phone",
+            accessor: "phone",
+            className: "hidden lg:table-cell text-center",
+        },
+        {
+            header: "Address",
+            accessor: "address",
+            className: "hidden lg:table-cell text-center",
+        },
+        ...(!isDemoData
+            ? [{ header: "Actions", accessor: "action", className: "text-center" }]
+            : [{ header: " ", accessor: "empty_action", className: "text-center" }]),
     ];
 
-    const renderRow = (item: ParentList) => (
+    const renderRow = (item: ParentRow) => (
         <tr
             key={item.id}
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-PurpleLight"
         >
             <td className="flex justify-center items-center gap-4 p-4">
-                {/* <Image
-                    src="/noAvatar.png"
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-                /> */}
                 <div className="flex flex-col justify-center items-center">
-                    <h3 className="font-semibold">{item.name} {item.surname}</h3>
+                    <h3 className="font-semibold">
+                        {item.name} {item.surname}
+                    </h3>
                     <p className="text-xs text-gray-500">{item.email}</p>
                 </div>
             </td>
-            {/* <td className="hidden md:table-cell text-center">{item.id}</td> */}
             <td className="hidden md:table-cell text-center">
-                {item.students.map(s => `${s.name} ${s.surname}`).join(", ") || "No students"}
+                {item.students.map((student) => `${student.name} ${student.surname}`).join(", ") ||
+                    "No students"}
             </td>
             <td className="hidden lg:table-cell text-center">{item.phone || "-"}</td>
             <td className="hidden lg:table-cell text-center">{item.address}</td>
             <td>
                 <div className="flex items-center gap-2">
-                    <FormContainer table="parent" type="update" data={item} />
-                    <FormContainer table="parent" type="delete" id={item.id} />
+                    {!isDemoData && (
+                        <>
+                            <FormContainer table="parent" type="update" data={item} />
+                            <FormContainer table="parent" type="delete" id={item.id} />
+                        </>
+                    )}
                 </div>
             </td>
         </tr>
@@ -122,7 +156,7 @@ const ParentListPage = async ({ searchParams }: any) => {
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-Yellow">
                             <Image src="/sort.png" alt="" width={14} height={14} />
                         </button>
-                        <FormContainer table="parent" type="create" />
+                        {!isDemoData && <FormContainer table="parent" type="create" />}
                     </div>
                 </div>
             </div>

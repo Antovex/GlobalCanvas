@@ -1,5 +1,6 @@
 export const ITEM_PER_PAGE = 8;
 export const DEFAULT_FEE_AMOUNT = 2750;
+export const DEMO_DATA_ENABLED = process.env.DEMO_DATA_ENABLED === "true";
 
 type RouteAccessMap = {
     [key: string]: string[];

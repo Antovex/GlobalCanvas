@@ -120,6 +120,7 @@ GlobalCanvas is a full‑stack, role‑aware School Management System built with
 Copy `.env.example` to `.env` and fill in values:
 ```
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
+DEMO_DATA_ENABLED=false
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 CLERK_SECRET_KEY=sk_live_...
@@ -128,6 +129,7 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL=/
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 NEXT_PUBLIC_CLOUDINARY_API_KEY=your_api_key
 ```
+`DEMO_DATA_ENABLED` is optional; when missing, it defaults to `false`. Set to `true` to enable `src/lib/data.ts` fallback only when core DB tables are empty.
 If using seeding scripts that upload or transform images, you may also require a Cloudinary API secret (not currently referenced in example). Keep secrets out of version control.
 
 #### 5.2.1 Sentry (Optional Monitoring & Tracing)
