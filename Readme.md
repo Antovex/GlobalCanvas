@@ -347,6 +347,28 @@ Adjust or expand it to populate demo users aligned with Clerk test accounts.
 * To override database credentials, edit `docker-compose.yml` or supply env overrides.
 * For production, replace hard-coded compose credentials and add secrets management.
 
+### 10.1 Isolated Per-Center Deployment Blueprint
+If you need strict institution isolation and transfer-ready deployments, use the center blueprint:
+
+- `deploy/CENTER_DEPLOYMENT_BLUEPRINT.md`
+- `deploy/center-template/docker-compose.center.yml`
+- `deploy/center-template/.env.center.example`
+- `deploy/registry/deployment-registry.template.csv`
+- `deploy/runbooks/BACKUP_RESTORE_RUNBOOK.md`
+- `deploy/runbooks/HANDOVER_CHECKLIST.md`
+- `deploy/runbooks/OFFBOARDING_SOP.md`
+- `deploy/runbooks/UPGRADE_POLICY.md`
+- `deploy/runbooks/SECURITY_BASELINE.md`
+
+Recommended pattern:
+
+1. Provision one single-tenant stack per center (dedicated app, DB, domain, secrets).
+2. Keep external integrations per center (Clerk, Cloudinary, Sentry).
+3. Track operations and ownership in the deployment registry.
+4. Enforce per-center backup/restore drills before go-live.
+5. Upgrade and roll back centers independently.
+6. Keep handover/offboarding artifacts ready for transfer on request.
+
 ---
 
 ## 🔒 Security & Hardening (Recommended Next Steps)

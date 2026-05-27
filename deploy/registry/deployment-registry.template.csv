@@ -1,0 +1,2 @@
+center_slug,legal_name,primary_domain,deployment_host,app_version,docker_image_tag,database_name,backup_target,backup_schedule,last_restore_drill_utc,credentials_owner,handover_contact,status
+center-a,Center A,center-a.example.com,vm-center-a-01,0.1.0,globalcanvas:0.1.0-center-a,globalcanvas_center_a,s3://globalcanvas-center-a-backups,"0 2 * * *",2026-05-01T02:30:00Z,ops@company.com,owner@center-a.com,active
